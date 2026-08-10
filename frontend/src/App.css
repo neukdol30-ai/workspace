@@ -1,0 +1,47 @@
+.worksapce{
+    nim-height: 100vh;
+    padding-top: 56px;
+    color: #f6cfe4;
+    background:
+    radial-gradient(circle at 80% 0%, rgba(105, 96, 174, 0.2), transparent 35%),
+    linear-gradient(135deg, #07091a, #10122d 55%, #080a1e);
+}
+
+.topbar{
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 10;
+    dispaly: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 56px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(246, 239, 228, 0.18);
+    background: rgb(7, 9, 26, 0.76);
+    backdrop-filter: blur(14px);
+}
+
+.clock{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    color: #f6efe4;
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-date{
+    color: #c9bba9;
+    font-size: 0.78rem;
+}
+
+.clock-time{
+    font-size: 1rem;
+    font-weight:700;
+    letter-spacing: 0.04em;
+}
+
+.desktop{
+    min-height: calc(100vh - 56px);
+}

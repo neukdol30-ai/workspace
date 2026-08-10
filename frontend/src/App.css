@@ -1,6 +1,6 @@
 .workspace {
     min-height: 100vh;
-    padding-top: 40px;
+    padding-top: var(--topbar-height);
     color: var(--ink);
     background: var(--surface);
 }
@@ -14,7 +14,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    height: 40px;
+    height: var(--topbar-height);
     padding: 0 12px;
     border-bottom: 2px solid var(--line);
     background: var(--surface);
@@ -26,41 +26,18 @@
     top: 0;
     left: 0;
     display: flex;
-    height: 28px;
+    height: var(--topbar-height);
 }
 
 .menu-trigger {
     position: relative;
-    height: 28px;
-}
-
-.side-menu {
-    position: fixed;
-    top: 28px;
-    bottom: 0;
-    left: 0;
-    z-index: 15;
-    width: min(280px, 82vw);
-    border-right: 2px solid var(--line);
-    background: var(--surface);
-    box-shadow: 3px 0 0 #b59b70;
-    pointer-events: none;
-    visibility: hidden;
-    transform: translateY(-28px);
-    transition: transform 160ms steps(4, end), visibility 160ms;
-}
-
-.menu-trigger:hover .side-menu,
-.menu-trigger:focus-within .side-menu {
-    pointer-events: auto;
-    visibility: visible;
-    transform: translateY(0);
+    height: var(--topbar-height);
 }
 
 .topbar-button {
     display: grid;
-    width: 32px;
-    height: 28px;
+    width: 40px;
+    height: var(--topbar-height);
     padding: 0;
     place-items: center;
     border: 0;
@@ -69,7 +46,8 @@
     cursor: pointer;
     background: var(--surface);
     font: inherit;
-    font-size: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .topbar-button:hover,
@@ -101,40 +79,48 @@
 }
 
 .clock-date {
-    font-size: 0.90rem;
+    font-size: 0.78rem;
     font-weight: 700;
 }
 
 .clock-time {
-    font-size: 0.90rem;
+    font-size: 0.78rem;
     font-weight: 700;
     letter-spacing: 0.03em;
 }
 
 .side-menu {
     position: fixed;
-    top: 40px;
-    bottom: 0;
+    top: var(--topbar-height);
     left: 0;
     z-index: 15;
     width: min(280px, 82vw);
-    border-right: 2px solid var(--line);
+    bottom: 0;
+    border: 2px solid var(--line);
+    border-left: 0;
     background: var(--surface);
-    box-shadow: 3px 0 0 #b59b70;
-    animation: menu-drop 160ms steps(4, end);
+    box-shadow: 3px 3px 0 #b59b70;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition-property: transform, opacity, visibility;
+    transition-duration: 240ms, 120ms, 0s;
+    transition-timing-function: cubic-bezier(0.22, 0.8, 0.25, 1), ease-out, linear;
+    transition-delay: 0s, 0s, 240ms;
+}
+
+.menu-trigger:hover .side-menu,
+.menu-trigger:focus-within .side-menu {
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: scaleY(1);
+    transition-delay: 0s, 0s, 0s;
 }
 
 .desktop {
-    min-height: calc(100vh - 28px);
+    min-height: calc(100vh - var(--topbar-height));
     background: var(--surface);
-}
-
-@keyframes menu-drop {
-    from {
-        transform: translateY(-28px);
-    }
-
-    to {
-        transform: translateY(0);
-    }
 }

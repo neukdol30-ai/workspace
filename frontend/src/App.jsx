@@ -30,30 +30,20 @@ function App() {
       <main className="workspace">
         <header className="topbar">
           <div className="topbar-left">
-            <button
-                className="topbar-button"
-                type="button"
-                aria-label="홈"
-                title="홈"
-            >
+            <button className="topbar-button" type="button" aria-label="Home">
               ⌂
             </button>
 
             <div className="menu-trigger">
-              <button
-                  className="topbar-button"
-                  type="button"
-                  aria-label="전체 메뉴"
-                  title="전체 메뉴"
-              >
-        <span className="hamburger" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
+              <button className="topbar-button" type="button" aria-label="Menu">
+              <span className="hamburger" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
               </button>
 
-              <aside className="side-menu" aria-label="전체 메뉴" />
+              <aside className="side-menu" aria-label="Menu" />
             </div>
           </div>
 
@@ -63,9 +53,7 @@ function App() {
           </time>
         </header>
 
-        {isMenuOpen && <aside className="side-menu" aria-label="전체 메뉴" />}
-
-        <section className="desktop" aria-label="작업 공간" />
+        <section className="desktop" aria-label="Workspace" />
       </main>
   )
 }

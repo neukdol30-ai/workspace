@@ -2,6 +2,7 @@
     --surface: #dcc9a5;
     --ink: #2f281d;
     --line: #493a27;
+    --topbar-height: 40px;
 
     font-family: "Courier New", ui-monospace, monospace;
 }

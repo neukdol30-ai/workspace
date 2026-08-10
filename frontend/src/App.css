@@ -37,7 +37,7 @@
 .topbar-button {
     display: grid;
     width: 40px;
-    height: var(--topbar-height);
+    height: calc(var(--topbar-height) - 2px);
     padding: 0;
     place-items: center;
     border: 0;

@@ -10,7 +10,6 @@ const menuItems = [
     {id: 'dummy5', number: '06', title: 'dummy5'},
 ]
 
-const MENU_CARD_STEP = 216
 
 function MainMenu() {
     const [menuOffset, setMenuOffset] = useState(0)
@@ -58,7 +57,7 @@ function MainMenu() {
         setIsDragging(true)
     }
 
-    function handlePointerUp(event) {
+    function handlePointerMove(event) {
         if (!dragRef.current.active) {
             return
         }
@@ -79,13 +78,8 @@ function MainMenu() {
             event.currentTarget.releasePointerCapture(event.pointerId)
         }
 
-        const snappedOffset = limitOffset(
-            Math.round(dragRef.current.lastOffset / MENU_CARD_STEP) * MENU_CARD_STEP,
-        )
-
         dragRef.current.active = false
         setIsDragging(false)
-        setMenuOffset(snappedOffset)
     }
 
     return (
@@ -97,8 +91,8 @@ function MainMenu() {
                 ref={viewportRef}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onMouseDown={handlePointerDown}
+                onPointerUp={handlePointerEnd}
+                onPointerCancel={handlePointerEnd}
                 >
                     <div
                         className="main-menu-track"

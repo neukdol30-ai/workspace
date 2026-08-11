@@ -20,7 +20,7 @@
     display: flex;
     width: max-content;
     gap: 16px;
-    padding: 0calc(50vw - 124px) 24px;
+    padding: 0 calc(50vw - 124px) 24px 300px;
     transition: transform 180ms ease-out;
     will-change: transform;
 }

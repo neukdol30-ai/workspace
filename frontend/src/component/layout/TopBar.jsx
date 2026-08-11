@@ -4,7 +4,7 @@ import './TopBar.css'
 
 function TopBar() {
     const [now, setNow] = useState(new Date())
-    const [isMenuPinned, setIsMenuPinned] = useState(false)
+    const [isMenuPinned, setIsMenuPinned] = useState(true)
     const [isMenuHovered, setIsMenuHovered] = useState(false)
 
     useEffect(() => {

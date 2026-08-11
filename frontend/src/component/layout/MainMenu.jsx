@@ -11,7 +11,7 @@ const menuItems = [
 ]
 
 
-function MainMenu() {
+function MainMenu({ onSelectMenu }) {
     const [menuOffset, setMenuOffset] = useState(0)
     const [isDragging, setIsDragging] = useState(false)
 
@@ -100,7 +100,12 @@ function MainMenu() {
                         style={{ transform: `translate(${menuOffset}px)`}}
                     >
                         {menuItems.map((menu) => (
-                            <button className="main-menu-button" key={menu.id} type="button">
+                            <button
+                                className="main-menu-button"
+                                key={menu.id}
+                                type="button"
+                                onClick={() => onSelectMenu(menu.id)}
+                            >
                                 <span className="main-menu-button-number">{menu.number}</span>
                                 <span className="main-menu-button-title">{menu.title}</span>
                                 <span className="main-menu-button-footer" aria-hidden="true" />

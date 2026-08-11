@@ -1,0 +1,88 @@
+.topbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: var(--topbar-height);
+    padding: 0 12px;
+    border-bottom: 2px solid var(--line);
+    background: var(--surface);
+    box-shadow: 0 2px 0 #b59b70;
+}
+
+.topbar-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    height: var(--topbar-height);
+}
+
+.menu-trigger {
+    position: relative;
+    height: var(--topbar-height);
+}
+
+.topbar-button {
+    display: grid;
+    width: 40px;
+    height: calc(var(--topbar-height) - 2px);
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-right: 2px solid var(--line);
+    color: var(--ink);
+    cursor: pointer;
+    background: var(--surface);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.topbar-button:hover,
+.topbar-button:focus-visible {
+    color: var(--surface);
+    outline: 0;
+    background: var(--ink);
+}
+
+.topbar-button--active {
+    color: var(--surface);
+    background: var(--ink);
+}
+
+.hamburger {
+    display: grid;
+    gap: 3px;
+}
+
+.hamburger span {
+    display: block;
+    width: 13px;
+    height: 2px;
+    background: currentColor;
+}
+
+.clock {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--ink);
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-date {
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.clock-time {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}

@@ -1,26 +1,3 @@
-:root {
-    --surface: #dcc9a5;
-    --ink: #2f281d;
-    --line: #493a27;
-    --topbar-height: 40px;
-
-    font-family: "Courier New", ui-monospace, monospace;
-}
-
-*{
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-width: 320px;
-    background: var(--surface);
-}
-
-html,
-body,
-#root {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
+@import './styles/tokens.css';
+@import './styles/reset.css';
+@import './styles/global.css';

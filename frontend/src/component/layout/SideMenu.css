@@ -1,0 +1,30 @@
+
+.side-menu {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    z-index: 15;
+    width: min(280px, 82vw);
+    bottom: 0;
+    border: 2px solid var(--line);
+    border-left: 0;
+    background: var(--surface);
+    box-shadow: 3px 3px 0 #b59b70;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: scaleY(0);
+    transform-origin: top;
+    transition-property: transform, opacity, visibility;
+    transition-duration: 240ms, 120ms, 0s;
+    transition-timing-function: cubic-bezier(0.22, 0.8, 0.25, 1), ease-out, linear;
+    transition-delay: 0s, 0s, 240ms;
+}
+
+.side-menu--open {
+    pointer-events: auto;
+    opacity: 1;
+    visibility: visible;
+    transform: scaleY(1);
+    transition-delay: 0s, 0s, 0s;
+}

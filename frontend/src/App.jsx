@@ -3,6 +3,8 @@ import './App.css'
 
 function App() {
   const [now, setNow] = useState(new Date())
+  const [isMenuPinned, setIsMenuPinned] = useState(false)
+  const [isMenuHovered, setIsMenuHovered] = useState(false)
 
   useEffect(() => {
     const timerId = window.setInterval(() => {
@@ -13,6 +15,18 @@ function App() {
       window.clearInterval(timerId)
     }
   }, [])
+
+  const isMenuOpen = isMenuPinned || isMenuHovered
+
+  function handleMenuToggle() {
+    if (isMenuPinned) {
+      setIsMenuPinned(false)
+      setIsMenuHovered(false)
+      return
+    }
+
+    setIsMenuPinned(true)
+  }
 
   const dateText = now.toLocaleDateString('ko-KR', {
     month: 'long',
@@ -29,22 +43,37 @@ function App() {
   return (
       <main className="workspace">
         <header className="topbar">
-          <div className="topbar-left">
-            <button className="topbar-button" type="button" aria-label="Home">
-              ⌂
+          <div
+              className="menu-trigger"
+              onMouseEnter={() => {
+                if (!isMenuPinned) {
+                  setIsMenuHovered(true)
+                }
+              }}
+              onMouseLeave={() => {
+                if (!isMenuPinned) {
+                  setIsMenuHovered(false)
+                }
+              }}
+          >
+            <button
+                className="topbar-button"
+                type="button"
+                aria-label="Menu"
+                aria-expanded={isMenuOpen}
+                onClick={handleMenuToggle}
+            >
+    <span className="hamburger" aria-hidden="true">
+      <span />
+      <span />
+      <span />
+    </span>
             </button>
 
-            <div className="menu-trigger">
-              <button className="topbar-button" type="button" aria-label="Menu">
-              <span className="hamburger" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-              </span>
-              </button>
-
-              <aside className="side-menu" aria-label="Menu" />
-            </div>
+            <aside
+                className={`side-menu ${isMenuOpen ? 'side-menu--open' : ''}`}
+                aria-label="Menu"
+            />
           </div>
 
           <time className="clock" dateTime={now.toISOString()}>

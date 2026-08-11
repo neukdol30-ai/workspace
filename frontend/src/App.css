@@ -111,8 +111,7 @@
     transition-delay: 0s, 0s, 240ms;
 }
 
-.menu-trigger:hover .side-menu,
-.menu-trigger:focus-within .side-menu {
+.side-menu--open {
     pointer-events: auto;
     opacity: 1;
     visibility: visible;

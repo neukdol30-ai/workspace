@@ -4,17 +4,29 @@
     background: var(--surface);
 }
 
-.main-menu-rail {
-    display: flex;
-    gap: 16px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 0 4px 24px;
-    scrollbar-width: none;
+.main-menu-viewport{
+    width: 100%;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
 }
 
-.main-menu-rail::-webkit-scrollbar {
-    display: none;
+.main-menu-viewport--dragging{
+    cursor: grabbing;
+}
+
+.main-menu-track{
+    display: flex;
+    width: max-content;
+    gap: 16px;
+    padding: 0calc(50vw - 124px) 24px;
+    transition: transform 180ms ease-out;
+    will-change: transform;
+}
+
+.main-menu-viewport--dragging .main-menu-track {
+    transition: none;
 }
 
 .main-menu-button {
@@ -61,6 +73,3 @@
     border-top: 2px solid currentColor;
 }
 
-.main-menu-button:first-child {
-    margin-left: calc(50% - 100px);
-}

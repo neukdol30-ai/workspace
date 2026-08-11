@@ -1,20 +1,20 @@
-import { useState } from 'react'
+import { useNavigate, Route, Routes } from 'react-router-dom'
 import TopBar from './component/layout/TopBar.jsx'
-import MainMenu from './component/layout/MainMenu.jsx'
+import HomePage from './pages/HomePage.jsx'
 import MemoPage from './pages/MemoPage.jsx'
 
 function App() {
-    const [activePage, setActivePage] = useState('home')
+    const navigate = useNavigate()
 
     return (
         <main className="workspace">
-            <TopBar />
+            <TopBar onHome={() => navigate('/')} />
 
-            {activePage === 'memo' ? (
-                <MemoPage />
-            ) : (
-                <MainMenu onSelectMenu={setActivePage} />
-            )}
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/memo" element={<MemoPage />} />
+                <Route path="*" element={<HomePage />} />
+            </Routes>
         </main>
     )
 }

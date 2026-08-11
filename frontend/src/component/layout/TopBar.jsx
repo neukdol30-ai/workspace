@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import SideMenu from './SideMenu'
 import './TopBar.css'
 
-function TopBar() {
+function TopBar({ onHome }) {
     const [now, setNow] = useState(new Date())
     const [isMenuPinned, setIsMenuPinned] = useState(true)
     const [isMenuHovered, setIsMenuHovered] = useState(false)
@@ -44,7 +44,7 @@ function TopBar() {
     return (
         <header className="topbar">
             <div className="topbar-left">
-                <button className="topbar-button" type="button" aria-label="Home">
+                <button className="topbar-button" type="button" aria-label="Home" onClick={onHome}>
                     H
                 </button>
 

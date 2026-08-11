@@ -19,10 +19,12 @@ function MainMenu({ onSelectMenu }) {
     const trackRef = useRef(null)
 
     const dragRef = useRef({
-      active: false,
-      startX: 0,
-      startOffset: 0,
-      lastOffset: 0,
+        active: false,
+        startX: 0,
+        startOffset: 0,
+        lastOffset: 0,
+        didMove: false,
+        menuId: null,
     })
 
     function getMinimumOffset() {
@@ -47,13 +49,16 @@ function MainMenu({ onSelectMenu }) {
 
         event.currentTarget.setPointerCapture(event.pointerId)
 
+        const menuButton = event.target.closest('.main-menu-button')
+
         dragRef.current = {
             active: true,
             startX: event.clientX,
             startOffset: menuOffset,
             lastOffset: menuOffset,
+            didMove: false,
+            menuId: menuButton?.dataset.menuId ?? null,
         }
-
         setIsDragging(true)
     }
 
@@ -63,6 +68,12 @@ function MainMenu({ onSelectMenu }) {
         }
 
         const distance = event.clientX - dragRef.current.startX
+
+        if (Math.abs(distance) > 5) {
+            dragRef.current.didMove = true
+        }
+
+
         const nextOffset = limitOffset(dragRef.current.startOffset + distance)
 
         dragRef.current.lastOffset = nextOffset
@@ -78,8 +89,14 @@ function MainMenu({ onSelectMenu }) {
             event.currentTarget.releasePointerCapture(event.pointerId)
         }
 
+        const { didMove, menuId } = dragRef.current
+
         dragRef.current.active = false
         setIsDragging(false)
+
+        if (!didMove && menuId) {
+            onSelectMenu(menuId)
+        }
     }
 
     return (
@@ -104,7 +121,7 @@ function MainMenu({ onSelectMenu }) {
                                 className="main-menu-button"
                                 key={menu.id}
                                 type="button"
-                                onClick={() => onSelectMenu(menu.id)}
+                                data-menu-id={menu.id}
                             >
                                 <span className="main-menu-button-number">{menu.number}</span>
                                 <span className="main-menu-button-title">{menu.title}</span>

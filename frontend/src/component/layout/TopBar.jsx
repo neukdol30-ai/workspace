@@ -77,6 +77,7 @@ function TopBar() {
                         <span/>
                         </span>
                     </button>
+                    <SideMenu isOpen={isMenuOpen} />
                 </div>
             </div>
 

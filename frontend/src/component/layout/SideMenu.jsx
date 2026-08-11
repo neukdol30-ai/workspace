@@ -1,12 +1,12 @@
 import './sideMenu.css';
 
-function  SdieMenu({ isOpen}) {
+function  SideMenu({ isOpen }) {
     return (
         <aside
-            className={`side-menu ${isMenuOpen ? 'side-menu--open' : ''}`}
+            className={`side-menu ${isOpen ? 'side-menu--open' : ''}`}
             aria-label="Menu"
         />
     )
 }
 
-export default Sdiemenu
+export default SideMenu

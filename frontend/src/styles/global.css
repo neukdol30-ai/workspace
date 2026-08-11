@@ -9,3 +9,10 @@ body,
 body {
     background: var(--surface);
 }
+
+.workspace {
+    min-height: 100vh;
+    padding-top: var(--topbar-height);
+    color: var(--ink);
+    background: var(--surface);
+}

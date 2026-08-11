@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import SdieMenu from './SdieMenu'
+import SideMenu from './SideMenu'
 import './TopBar.css'
 
 function TopBar() {
@@ -61,7 +61,6 @@ function TopBar() {
                         }
                     }}
                 >
-
                     <button
                         className={`topbar-button ${
                             isMenuPinned ? 'topbar-button--active' : ''
@@ -72,14 +71,12 @@ function TopBar() {
                         onClick={handleMenuToggle}
                     >
 
-              <span className="hamburger" aria-hidden="true">
-                <span/>
-                <span/>
-                <span/>
-              </span>
+                        <span className="hamburger" aria-hidden="true">
+                        <span/>
+                        <span/>
+                        <span/>
+                        </span>
                     </button>
-
-
                 </div>
             </div>
 

@@ -123,3 +123,75 @@
     min-height: calc(100vh - var(--topbar-height));
     background: var(--surface);
 }
+
+.topbar-button--active {
+    color: var(--surface);
+    background: var(--ink);
+}
+
+.desktop {
+    min-height: calc(100vh - var(--topbar-height));
+    padding: clamp(72px, 9vh, 112px) 24px 36px;
+    background: var(--surface);
+}
+
+.main-menu-rail {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 4px 24px;
+    scrollbar-width: none;
+}
+
+.main-menu-rail::-webkit-scrollbar {
+    display: none;
+}
+
+.main-menu-button {
+    display: flex;
+    flex: 0 0 200px;
+    flex-direction: column;
+    min-height: 600px;
+    padding: 12px 10px 0;
+    border: 2px solid var(--line);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    background: var(--surface);
+    box-shadow: 3px 3px 0 #b59b70;
+    font: inherit;
+}
+
+.main-menu-button:hover,
+.main-menu-button:focus-visible {
+    color: var(--surface);
+    outline: 0;
+    background: var(--ink);
+}
+
+.main-menu-button-number {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.main-menu-button-title {
+    margin-top: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    line-height: 1;
+}
+
+.main-menu-button-footer {
+    min-height: 64px;
+    margin-top: auto;
+    border-top: 2px solid currentColor;
+}
+
+.main-menu-button:first-child {
+    margin-left: calc(50% - 100px);
+}

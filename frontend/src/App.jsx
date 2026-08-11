@@ -43,37 +43,47 @@ function App() {
   return (
       <main className="workspace">
         <header className="topbar">
-          <div
-              className="menu-trigger"
-              onMouseEnter={() => {
-                if (!isMenuPinned) {
-                  setIsMenuHovered(true)
-                }
-              }}
-              onMouseLeave={() => {
-                if (!isMenuPinned) {
-                  setIsMenuHovered(false)
-                }
-              }}
-          >
-            <button
-                className="topbar-button"
-                type="button"
-                aria-label="Menu"
-                aria-expanded={isMenuOpen}
-                onClick={handleMenuToggle}
-            >
-    <span className="hamburger" aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
+          <div className="topbar-left">
+            <button className="topbar-button" type="button" aria-label="Home">
+              H
             </button>
 
-            <aside
-                className={`side-menu ${isMenuOpen ? 'side-menu--open' : ''}`}
-                aria-label="Menu"
-            />
+              <div
+                  className="menu-trigger"
+                  onMouseEnter={() => {
+                    if (!isMenuPinned) {
+                      setIsMenuHovered(true)
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (!isMenuPinned) {
+                      setIsMenuHovered(false)
+                    }
+                  }}
+              >
+
+              <button
+                  className={`topbar-button ${
+                      isMenuPinned ? 'topbar-button--active' : ''
+                  }`}
+                  type="button"
+                  aria-label="Menu"
+                  aria-expanded={isMenuOpen}
+                  onClick={handleMenuToggle}
+              >
+
+              <span className="hamburger" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+              </button>
+
+              <aside
+                  className={`side-menu ${isMenuOpen ? 'side-menu--open' : ''}`}
+                  aria-label="Menu"
+              />
+            </div>
           </div>
 
           <time className="clock" dateTime={now.toISOString()}>
@@ -82,7 +92,16 @@ function App() {
           </time>
         </header>
 
-        <section className="desktop" aria-label="Workspace" />
+        <section className="desktop" aria-label="Workspace">
+          <div className="main-menu-rail">
+            <button className="main-menu-button" type="button">
+              <span className="main-menu-button-number">01</span>
+              <span className="main-menu-button-title">MEMO</span>
+              <span className="main-menu-button-footer" aria-hidden="true" />
+            </button>
+          </div>
+        </section>
+
       </main>
   )
 }

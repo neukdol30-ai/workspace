@@ -4,8 +4,12 @@ import SideMenu from './sideMenu/SideMenu'
 import './TopBar.css'
 
 function TopBar({
-                    onHome, isMenuPinned, onMenuPinnedChange,
-                    sideMenuMode, onSideMenuModeChange,
+                    onHome,
+                    isMenuPinned,
+                    onMenuPinnedChange,
+                    sideMenuMode,
+                    onSideMenuModeChange,
+                    onMenuOpenChange,
                 }) {
     const [now, setNow] = useState(new Date())
     const [isMenuHovered, setIsMenuHovered] = useState(false)
@@ -21,6 +25,10 @@ function TopBar({
     }, [])
 
     const isMenuOpen = isMenuPinned || isMenuHovered
+
+    useEffect(() => {
+        onMenuOpenChange(isMenuOpen)
+    }, [isMenuOpen, onMenuOpenChange])
 
     function handleMenuToggle() {
         if (isMenuPinned) {

@@ -53,22 +53,23 @@ function GlobalSideMenu({ supportsLocalMenu, onOpenLocalMenu }) {
                                 </span>
                             </NavLink>
 
-                            {canOpenLocalMenu ? (
-                                <button
-                                    className="side-menu-local-button"
-                                    type="button"
-                                    aria-label="Open memo folders"
-                                    onClick={onOpenLocalMenu}
-                                >
-                                    &gt;
-                                </button>
+                            {menu.id === 'memo' && (
+                                canOpenLocalMenu ? (
+                                    <button
+                                        className="side-menu-local-button"
+                                        type="button"
+                                        aria-label="Open memo folders"
+                                        onClick={onOpenLocalMenu}
+                                    >
+                                        &gt;
+                                    </button>
                                 ) : (
-                                <span
-                                    className="side-menu-item-marker"
-                                    aria-hidden="true"
-                                >
-                                &gt;
-                                </span>
+                                    <NavLink
+                                        className="side-menu-local-link"
+                                        to={menu.path}
+                                        aria-label="Open memo"
+                                    />
+                                )
                             )}
                         </div>
                     )

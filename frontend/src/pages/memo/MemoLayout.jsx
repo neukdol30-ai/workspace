@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { initialFolders, initialNotes } from './memoData.js'
 import './MemoLayout.css'
 
-function MemoLayout() {
+function MemoLayout({ hideFolderList }) {
     const [notes, setNotes] = useState(initialNotes)
     const [selectedFolderId, setSelectedFolderId] = useState('all')
     const [selectedNoteId, setSelectedNoteId] = useState(
@@ -82,6 +82,7 @@ function MemoLayout() {
                         selectFolder,
                         createNote,
                         updateSelectedNote,
+                        hideFolderList,
                     }}
                 />
             </div>

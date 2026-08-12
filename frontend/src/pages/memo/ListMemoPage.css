@@ -170,3 +170,11 @@
     font-size: 0.75rem;
     opacity: 0.6;
 }
+
+.memo-layout--folders-hidden {
+    grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.memo-folders[hidden] {
+    display: none;
+}

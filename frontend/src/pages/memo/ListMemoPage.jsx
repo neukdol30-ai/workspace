@@ -12,6 +12,7 @@ function ListMemoPage() {
         selectFolder,
         createNote,
         updateSelectedNote,
+        hideFolderList,
     } = useOutletContext()
 
     const visibleNotes=
@@ -20,8 +21,15 @@ function ListMemoPage() {
             : notes.filter((note) => note.folderId === selectedFolderId)
 
     return (
-        <div className="memo-layout">
-            <aside className="memo-folders">
+        <div
+            className={`memo-layout ${
+                hideFolderList ? 'memo-layout--folders-hidden' : ''
+            }`}
+        >
+            <aside
+                className="memo-folders"
+                hidden={hideFolderList}
+            >
                 <div className="memo-column-heading">FOLDERS</div>
 
                 <div className="memo-folder-list">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Navigate, useLocation, useNavigate, Route, Routes } from 'react-router-dom'
 import TopBar from './component/layout/TopBar.jsx'
 import HomePage from './pages/HomePage.jsx'
@@ -10,7 +10,23 @@ function App() {
     const navigate = useNavigate()
     const location = useLocation()
     const [isMenuPinned, setIsMenuPinned] = useState(true)
+    const [isSideMenuOpen, setIsSideMenuOpen] = useState(true)
     const [sideMenuMode, setSideMenuMode] = useState('global')
+
+
+    useEffect(() => {
+        if (location.pathname.startsWith('/memo')) {
+            setSideMenuMode('local')
+            return
+        }
+
+        setSideMenuMode('global')
+    }, [location.pathname])
+
+    const shouldHideMemoFolders =
+        location.pathname.startsWith('/memo') &&
+        isSideMenuOpen &&
+        sideMenuMode === 'local'
 
     const shouldMoveContent =
         isMenuPinned && location.pathname.startsWith('/memo')
@@ -20,11 +36,13 @@ function App() {
             <TopBar
                 onHome={() => {
                     setSideMenuMode('global')
-                    navigate('/')}}
+                    navigate('/')
+                }}
                 isMenuPinned={isMenuPinned}
                 onMenuPinnedChange={setIsMenuPinned}
                 sideMenuMode={sideMenuMode}
                 onSideMenuModeChange={setSideMenuMode}
+                onMenuOpenChange={setIsSideMenuOpen}
             />
 
             <div
@@ -35,7 +53,14 @@ function App() {
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="*" element={<HomePage />} />
-                    <Route path="/memo" element={<MemoLayout />}>
+                    <Route
+                        path="/memo"
+                        element={
+                            <MemoLayout
+                                hideFolderList={shouldHideMemoFolders}
+                            />
+                        }
+                    >
                         <Route index element={<Navigate to="list" replace />} />
                         <Route path="list" element={<ListMemoPage />} />
                         <Route path="board" element={<BoardMemoPage />} />

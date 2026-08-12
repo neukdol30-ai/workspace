@@ -1,4 +1,4 @@
-import './sideMenu.css';
+import './SideMenu.css';
 
 function  SideMenu({ isOpen }) {
     return (

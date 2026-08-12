@@ -3,6 +3,7 @@
     --ink: #2f281d;
     --line: #493a27;
     --topbar-height: 40px;
+    --side-menu-width: min(280px, 82vw);
 
     font-family: "Courier New", ui-monospace, monospace;
 }

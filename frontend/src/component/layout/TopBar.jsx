@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
+import { MdHome, MdDensityMedium } from 'react-icons/md'
 import SideMenu from './SideMenu'
 import './TopBar.css'
 
-function TopBar({ onHome }) {
+function TopBar({ onHome, isMenuPinned, onMenuPinnedChange, }) {
     const [now, setNow] = useState(new Date())
-    const [isMenuPinned, setIsMenuPinned] = useState(true)
     const [isMenuHovered, setIsMenuHovered] = useState(false)
 
     useEffect(() => {
@@ -21,12 +21,12 @@ function TopBar({ onHome }) {
 
     function handleMenuToggle() {
         if (isMenuPinned) {
-            setIsMenuPinned(false)
+            onMenuPinnedChange(false)
             setIsMenuHovered(false)
             return
         }
 
-        setIsMenuPinned(true)
+        onMenuPinnedChange(true)
     }
 
     const dateText = now.toLocaleDateString('ko-KR', {
@@ -45,10 +45,7 @@ function TopBar({ onHome }) {
         <header className="topbar">
             <div className="topbar-left">
                 <button className="topbar-button" type="button" aria-label="Home" onClick={onHome}>
-                    <span className="material-symbols-outlined topbar-icon"
-                    aria-hidden="true">
-                    home
-                    </span>
+                    <MdHome className="topbar-icon" aria-hidden="true" />
                 </button>
 
                 <div
@@ -74,9 +71,7 @@ function TopBar({ onHome }) {
                         onClick={handleMenuToggle}
                     >
 
-                        <span class="material-symbols-outlined topbar-icon" aria-hidden="true">
-                        density_medium
-                        </span>
+                        <MdDensityMedium className="topbar-icon" aria-hidden="true"/>
                     </button>
                     <SideMenu isOpen={isMenuOpen} />
                 </div>

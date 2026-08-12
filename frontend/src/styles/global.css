@@ -16,3 +16,12 @@ body {
     color: var(--ink);
     background: var(--surface);
 }
+
+.workspace-content {
+    min-width: 0;
+    transition: margin-left 240ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.workspace-content--menu-pinned {
+    margin-left: var(--side-menu-width);
+}

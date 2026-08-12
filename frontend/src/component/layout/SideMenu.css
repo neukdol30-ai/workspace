@@ -4,7 +4,7 @@
     top: var(--topbar-height);
     left: 0;
     z-index: 15;
-    width: min(280px, 82vw);
+    width: var(--side-menu-width);
     bottom: 0;
     border: 2px solid var(--line);
     border-left: 0;

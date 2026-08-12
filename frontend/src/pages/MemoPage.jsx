@@ -2,10 +2,10 @@ import { useState } from 'react'
 import './MemoPage.css'
 
 const initialFolders = [
-    { id: 'all', name: 'ALL NOTES'},
-    { id: 'all', name: 'ALL NOTES'},
-    { id: 'all', name: 'ALL NOTES'},
-    { id: 'all', name: 'ALL NOTES'},
+    { id: 'all', name: 'ALL NOTES' },
+    { id: 'inbox', name: 'INBOX' },
+    { id: 'ideas', name: 'IDEAS' },
+    { id: 'projects', name: 'PROJECTS' },
 ]
 
 const initialNotes = [
@@ -36,7 +36,7 @@ function MemoPage() {
             : notes.filter((note) => note.folderId === selectedFolderId)
 
     const selectedNote =
-        notes.find((note) => note.id === selectedNoteId ?? null)
+        notes.find((note) => note.id === selectedNoteId) ?? null
 
     function selectFolder(folderId) {
         const nextVisibleNotes =
@@ -73,14 +73,36 @@ function MemoPage() {
                     updatedAt : '방금 전',
                 }
                 : note,
-             )
+            )
         )
     }
 
     return (
         <section className="memo-page" aria-label="Memo">
             <div className="memo-window">
-                <aside className="memo-command-bar" aria-hidden="true" />
+                <div className="memo-command-bar">
+                    <div className="memo-mode-switch" aria-label="Memo view mode">
+                        <button
+                            className={`memo-mode-button ${
+                                viewMode === 'list' ? 'memo-mode-button--active' : ''
+                            }`}
+                            type="button"
+                            onClick={() => setViewMode('list')}
+                        >
+                            LIST
+                        </button>
+
+                        <button
+                            className={`memo-mode-button ${
+                                viewMode === 'board' ? 'memo-mode-button--active' : ''
+                            }`}
+                            type="button"
+                            onClick={() => setViewMode('board')}
+                        >
+                            BOARD
+                        </button>
+                    </div>
+                </div>
 
                     <div className="memo-layout">
                         <aside className="memo-folders">
@@ -104,7 +126,7 @@ function MemoPage() {
                                             }`}
                                             key={folder.id}
                                             type="button"
-                                            onClick={() => selectFolder(folder.Id)}
+                                            onClick={() => selectFolder(folder.id)}
                                             >
                                             <span>{folder.name}</span>
                                             <span>{noteCount}</span>
@@ -165,7 +187,7 @@ function MemoPage() {
                                     />
 
                                     <textarea
-                                        className="memo-title-input"
+                                        className="memo-content-input"
                                         value={selectedNote.content}
                                         onChange={(event) =>
                                             updateSelectedNote('content', event.target.value)

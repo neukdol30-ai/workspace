@@ -1,0 +1,9 @@
+.memo-board {
+    display: grid;
+    height: 100%;
+    place-content: center;
+    gap: 8px;
+    background: var(--surface);
+    font-size: 0.75rem;
+    text-align: center;
+}

@@ -55,16 +55,10 @@
     background: var(--ink);
 }
 
-.hamburger {
-    display: grid;
-    gap: 3px;
-}
-
-.hamburger span {
+.topbar-icon {
     display: block;
-    width: 13px;
-    height: 2px;
-    background: currentColor;
+    font-size: 20px;
+    line-height: 1;
 }
 
 .clock {

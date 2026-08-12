@@ -45,7 +45,10 @@ function TopBar({ onHome }) {
         <header className="topbar">
             <div className="topbar-left">
                 <button className="topbar-button" type="button" aria-label="Home" onClick={onHome}>
-                    H
+                    <span className="material-symbols-outlined topbar-icon"
+                    aria-hidden="true">
+                    home
+                    </span>
                 </button>
 
                 <div
@@ -71,10 +74,8 @@ function TopBar({ onHome }) {
                         onClick={handleMenuToggle}
                     >
 
-                        <span className="hamburger" aria-hidden="true">
-                        <span/>
-                        <span/>
-                        <span/>
+                        <span class="material-symbols-outlined topbar-icon" aria-hidden="true">
+                        density_medium
                         </span>
                     </button>
                     <SideMenu isOpen={isMenuOpen} />

@@ -25,10 +25,11 @@ const initialNotes = [
     },
 ]
 
-function MemoPage() {
+function MemoPage({ viewMode }) {
     const [notes, setNotes] = useState(initialNotes)
     const [selectedFolderId, setSelectedFolderId] = useState('all')
     const [selectedNoteId, setSelectedNoteId] = useState(1)
+    const navigate = useNavigate()
 
     const visibleNotes=
         selectedFolderId === 'all'
@@ -87,7 +88,7 @@ function MemoPage() {
                                 viewMode === 'list' ? 'memo-mode-button--active' : ''
                             }`}
                             type="button"
-                            onClick={() => setViewMode('list')}
+                            onClick={() => navigate('/memo/list')}
                         >
                             LIST
                         </button>
@@ -97,7 +98,7 @@ function MemoPage() {
                                 viewMode === 'board' ? 'memo-mode-button--active' : ''
                             }`}
                             type="button"
-                            onClick={() => setViewMode('board')}
+                            onClick={() => navigate('/memo/board')}
                         >
                             BOARD
                         </button>

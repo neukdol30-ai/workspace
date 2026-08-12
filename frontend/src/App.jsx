@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useLocation, useNavigate, Route, Routes } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, Route, Routes } from 'react-router-dom'
 import TopBar from './component/layout/TopBar.jsx'
 import HomePage from './pages/HomePage.jsx'
 import MemoPage from './pages/MemoPage.jsx'
@@ -27,8 +27,10 @@ function App() {
             >
                 <Routes>
                     <Route path="/" element={<HomePage />} />
-                    <Route path="/memo" element={<MemoPage />} />
                     <Route path="*" element={<HomePage />} />
+                    <Route path="/memo" element={<Navigate to="/memo/list" replace />} />
+                    <Route path="/memo/list" element={<MemoPage viewMode="list" />} />
+                    <Route path="/memo/board" element={<MemoPage viewMode="board" />} />
                 </Routes>
             </div>
         </main>

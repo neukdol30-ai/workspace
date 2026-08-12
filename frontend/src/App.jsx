@@ -10,6 +10,7 @@ function App() {
     const navigate = useNavigate()
     const location = useLocation()
     const [isMenuPinned, setIsMenuPinned] = useState(true)
+    const [sideMenuMode, setSideMenuMode] = useState('global')
 
     const shouldMoveContent =
         isMenuPinned && location.pathname.startsWith('/memo')
@@ -17,9 +18,13 @@ function App() {
     return (
         <main className="workspace">
             <TopBar
-                onHome={() => navigate('/')}
+                onHome={() => {
+                    setSideMenuMode('global')
+                    navigate('/')}}
                 isMenuPinned={isMenuPinned}
                 onMenuPinnedChange={setIsMenuPinned}
+                sideMenuMode={sideMenuMode}
+                onsideMenuModeChange={setSideMenuMode}
             />
 
             <div

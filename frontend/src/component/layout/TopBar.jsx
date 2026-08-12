@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { MdHome, MdDensityMedium } from 'react-icons/md'
-import SideMenu from './SideMenu'
+import SideMenu from './sideMenu/SideMenu'
 import './TopBar.css'
 
-function TopBar({ onHome, isMenuPinned, onMenuPinnedChange, }) {
+function TopBar({
+                    onHome, isMenuPinned, onMenuPinnedChange,
+                    sideMenuMode, onSideMenuModeChange,
+                }) {
     const [now, setNow] = useState(new Date())
     const [isMenuHovered, setIsMenuHovered] = useState(false)
 
@@ -73,7 +76,11 @@ function TopBar({ onHome, isMenuPinned, onMenuPinnedChange, }) {
 
                         <MdDensityMedium className="topbar-icon" aria-hidden="true"/>
                     </button>
-                    <SideMenu isOpen={isMenuOpen} />
+                    <SideMenu
+                        isOpen={isMenuOpen}
+                        sideMenuMode={sideMenuMode}
+                        onSideMenuModeChange={onSideMenuModeChange}
+                    />
                 </div>
             </div>
 

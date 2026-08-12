@@ -94,13 +94,21 @@
     padding: 12px;
 }
 
-.memo-folder-item:hover,
+.memo-folder-item:not(.memo-folder-item--active):hover,
+.memo-note-item:not(.memo-note-item--active):hover {
+    color: var(--ink);
+    background: #d2bb91;
+}
+
 .memo-folder-item--active,
-.memo-note-item:hover,
 .memo-note-item--active {
     color: var(--surface);
     background: var(--ink);
+    box-shadow:
+            inset 0 0 0 2px var(--surface),
+            inset 0 0 0 3px var(--line);
 }
+
 
 .memo-note-item strong,
 .memo-note-item p {

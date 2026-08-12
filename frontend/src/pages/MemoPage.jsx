@@ -98,7 +98,7 @@ function MemoPage() {
                                     return (
                                         <button
                                             className={`memo-folder-item ${
-                                                folder.id === selectFolderId
+                                                folder.id === selectedFolderId
                                                     ? 'memo-folder-item--active'
                                                     : ''
                                             }`}

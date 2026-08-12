@@ -1,0 +1,51 @@
+.side-menu-pane.memo-side-menu {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+}
+
+.side-menu-local-rail {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    border: 0;
+    border-right: 2px solid var(--line);
+    color: var(--surface);
+    cursor: pointer;
+    background: var(--ink);
+    font: inherit;
+}
+
+.side-menu-local-rail svg {
+    width: 20px;
+    height: 20px;
+}
+
+.side-menu-local-rail span {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    writing-mode: vertical-rl;
+}
+
+.side-menu-local-rail:hover {
+    color: var(--ink);
+    background: #d2bb91;
+}
+
+.side-menu-local-content {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+}
+
+.side-menu-local-empty {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.72rem;
+    font-weight: 700;
+    opacity: 0.55;
+}

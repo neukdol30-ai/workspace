@@ -24,7 +24,7 @@ function App() {
                 isMenuPinned={isMenuPinned}
                 onMenuPinnedChange={setIsMenuPinned}
                 sideMenuMode={sideMenuMode}
-                onsideMenuModeChange={setSideMenuMode}
+                onSideMenuModeChange={setSideMenuMode}
             />
 
             <div

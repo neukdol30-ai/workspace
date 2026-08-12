@@ -26,48 +26,60 @@ function GlobalSideMenu({ supportsLocalMenu, onOpenLocalMenu }) {
                 <span>00</span>
             </div>
 
-            <nav className="side-menu-list">
+            <nav className="side-menu-list" aria-label="Workspace shortcuts">
                 {globalMenuItems.map((menu) => {
                     const Icon = menu.icon
 
+                    const canOpenLocalMenu =
+                        menu.id === 'memo' && supportsLocalMenu
+
                     return (
-                        <NavLink
-                            className={({ isActive }) =>
-                                `side-menu-item ${
-                                    isActive ? 'side-menu-item--active' : ''
-                                }`
-                            }
-                            end={menu.end}
-                            key={menu.id}
-                            to={menu.path}
-                        >
-                            <Icon className="side-menu-item-icon" aria-hidden="true" />
-                            <span className="side-menu-item-label">{menu.label}</span>
-                            <span className="side-menu-item-marker" aria-hidden="true">
-                &gt;
-              </span>
-                        </NavLink>
+                        <div className="side-menu-row" key={menu.id}>
+                            <NavLink
+                                className={({ isActive }) =>
+                                    `side-menu-item ${
+                                        isActive ? 'side-menu-item--active' : ''
+                                    }`
+                                }
+                                end={menu.end}
+                                to={menu.path}
+                            >
+                                <Icon
+                                    className="side-menu-item-icon"
+                                    aria-hidden="true"
+                                />
+                                <span className="side-menu-item-label">
+                                {menu.label}
+                                </span>
+                            </NavLink>
+
+                            {canOpenLocalMenu ? (
+                                <button
+                                    className="side-menu-local-button"
+                                    type="button"
+                                    aria-label="Open memo folders"
+                                    onClick={onOpenLocalMenu}
+                                >
+                                    &gt;
+                                </button>
+                                ) : (
+                                <span
+                                    className="side-menu-item-marker"
+                                    aria-hidden="true"
+                                >
+                                &gt;
+                                </span>
+                            )}
+                        </div>
                     )
                 })}
             </nav>
 
             <div className="side-menu-spacer" />
-
-            {supportsLocalMenu ? (
-                <button
-                    className="side-menu-footer side-menu-footer--button"
-                    type="button"
-                    onClick={onOpenLocalMenu}
-                >
-                    <span>LOCAL MENU</span>
-                    <span>&gt;</span>
-                </button>
-            ) : (
                 <div className="side-menu-footer">
                     <span>GLOBAL</span>
                     <span>{String(globalMenuItems.length).padStart(2, '0')}</span>
                 </div>
-            )}
         </section>
     )
 }

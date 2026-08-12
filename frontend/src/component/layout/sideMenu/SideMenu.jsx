@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom'
 import GlobalSideMenu from './GlobalSideMenu'
-import MemoSideMenu from './MemoSideMenu'
+import MemoSideMenu from './MemoSideMenu.jsx'
 import './SideMenu.css'
 
 function SideMenu({

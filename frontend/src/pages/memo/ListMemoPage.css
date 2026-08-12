@@ -12,7 +12,7 @@
     min-height: 0;
 }
 
-memo-folders,
+.memo-folders,
 .memo-note-column {
     display: flex;
     flex-direction: column;

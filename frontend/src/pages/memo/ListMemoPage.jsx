@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom'
-import './MemoLayout.css'
+import './ListMemoPage.css'
 
 function ListMemoPage() {
     const {

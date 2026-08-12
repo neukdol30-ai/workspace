@@ -21,11 +21,28 @@
     background: var(--surface);
 }
 
-.memo-mode-switch {}
+.memo-mode-switch {
+    display: flex;
+    height: 100%;
+}
 
 .memo-mode-button {
+    display: grid;
+    min-width: 72px;
+    padding: 0 14px;
+    place-items: center;
+    border-right: 1px solid var(--line);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.memo-mode-button:hover {
+    background: #d2bb91;
 }
 
 .memo-mode-button--active {
-
+    color: var(--surface);
+    background: var(--ink);
 }

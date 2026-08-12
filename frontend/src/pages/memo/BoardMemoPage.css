@@ -1,6 +1,7 @@
 .memo-board {
     display: grid;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     place-content: center;
     gap: 8px;
     background: var(--surface);

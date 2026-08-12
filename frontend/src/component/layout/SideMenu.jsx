@@ -36,7 +36,7 @@ function  SideMenu({ isOpen }) {
                     return(
                         <NavLink
                             className={({ isActive }) =>
-                                `side-menu-item${isActive ? ' active' : ''}`
+                                `side-menu-item${isActive ? 'side-menu-item--active' : ''}`
                         }
                             end={menu.end}
                             key={menu.id}
@@ -58,7 +58,7 @@ function  SideMenu({ isOpen }) {
 
             <div className="side-menu-footer">
                 <span>GLOBAL</span>
-                <span>{String(globalMenuItems).padStart(2, '0')}</span>
+                <span>{String(globalMenuItems.length).padStart(2, '0')}</span>
             </div>
         </aside>
 

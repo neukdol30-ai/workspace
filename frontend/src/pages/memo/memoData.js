@@ -21,3 +21,18 @@ export const initialNotes = [
         updatedAt: '오늘',
     },
 ]
+
+export const initialBoardNodes = [
+    {
+        id: 'node-1',
+        noteId: 1,
+        x: 80,
+        y: 80,
+    },
+    {
+        id: 'node-2',
+        noteId: 2,
+        x: 340,
+        y: 240,
+    },
+]

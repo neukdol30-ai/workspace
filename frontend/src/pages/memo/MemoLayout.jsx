@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { initialFolders, initialNotes } from './memoData.js'
+import { initialFolders, initialNotes, initialBoardNodes, } from './memoData.js'
 import './MemoLayout.css'
 
 function MemoLayout({ hideFolderList }) {
@@ -9,6 +9,7 @@ function MemoLayout({ hideFolderList }) {
     const [selectedNoteId, setSelectedNoteId] = useState(
         initialNotes[0]?.id ?? null
     )
+    const [boardNodes, setBoardNodes] = useState(initialBoardNodes)
 
     const selectedNote =
         notes.find((note) => note.id === selectedNoteId) ?? null
@@ -37,6 +38,20 @@ function MemoLayout({ hideFolderList }) {
 
         setNotes((currentNotes) => [newNote, ...currentNotes])
         setSelectedNoteId(newNote.id)
+
+        setBoardNodes((currentNodes) => {
+          const index = currentNodes.length
+
+          return [
+              ...currentNodes,
+              {
+                  id: `node-${newNote.id}`,
+                  noteId: newNote.id,
+                  x: 80 + (index % 4) * 260,
+                  y: 80 + Math.floor(index / 4) * 200,
+              }
+          ]
+        })
     }
 
     function updateSelectedNote(field, value) {
@@ -75,6 +90,8 @@ function MemoLayout({ hideFolderList }) {
                     context={{
                         folders: initialFolders,
                         notes,
+                        boardNodes,
+                        setBoardNodes,
                         selectedFolderId,
                         selectedNoteId,
                         selectedNote,

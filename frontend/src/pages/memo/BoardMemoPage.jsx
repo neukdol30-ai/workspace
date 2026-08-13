@@ -60,6 +60,12 @@ function BoardMemoPage() {
     const openedNote =
         notes.find((note) => note.id === openedNoteId) ?? null
 
+    function handleToolChange(nextMode) {
+        setToolMode((currentMode) =>
+            currentMode === nextMode ? 'select' : nextMode,
+        )
+    }
+
     function handleBoardWheel(event) {
 
         if (
@@ -268,7 +274,7 @@ function BoardMemoPage() {
 
         setDraggingNodeId(null)
 
-        if (shouldOpenNote) {
+        if (shouldOpenNote && toolMode === 'select') {
             setOpenedNoteId(node.noteId)
         }
     }
@@ -285,17 +291,40 @@ function BoardMemoPage() {
                 </button>
 
                 <button
-                    className="memo-board-tool"
+                    className={`memo-board-tool ${
+                        toolMode === 'select'
+                            ? 'memo-board-tool--active'
+                            : ''
+                    }`}
                     type="button"
-                    disabled
+                    aria-pressed={toolMode === 'select'}
+                    onClick={() => setToolMode('select')}
+                    >
+                    SELECT
+                </button>
+
+                <button
+                    className={`memo-board-tool ${
+                        toolMode === 'link'
+                            ? 'memo-board-tool--active'
+                            : ''
+                    }`}
+                    type="button"
+                    aria-pressed={toolMode === 'link'}
+                    onClick={() => handleToolChange('link')}
                 >
                     LINK
                 </button>
 
                 <button
-                    className="memo-board-tool"
+                    className={`memo-board-tool ${
+                        toolMode === 'unlink'
+                            ? 'memo-board-tool--active'
+                            : ''
+                    }`}
                     type="button"
-                    disabled
+                    aria-pressed={toolMode === 'unlink'}
+                    onClick={() => handleToolChange('unlink')}
                     >
                     UNLINK
                 </button>

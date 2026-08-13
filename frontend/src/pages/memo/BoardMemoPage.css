@@ -150,3 +150,16 @@
     cursor: grabbing;
     box-shadow: 7px 7px 0 #9f845a;
 }
+
+.memo-board-tool--active {
+    color: var(--surface);
+    background: var(--ink);
+    box-shadow:
+            inset 0 0 0 2px var(--surface),
+            inset 0 0 0 3px var(--line);
+}
+
+.memo-board-tool--active:hover {
+    color: var(--surface);
+    background: var(--ink);
+}

@@ -8,6 +8,8 @@ function BoardMemoPage() {
         notes,
         boardNodes,
         setBoardNodes,
+        boardEdges,
+        setBoardEdges,
         selectedFolderId,
         createNote,
     } = useOutletContext()
@@ -31,6 +33,7 @@ function BoardMemoPage() {
     const [draggingNodeId, setDraggingNodeId] = useState(null)
     const [openedNoteId, setOpenedNoteId] = useState(null)
     const [toolMode, setToolMode] = useState('select')
+    const [pendingNodeId, setPendingNodeId] = useState(null)
 
     const cardDragRef = useRef({
         active: false,
@@ -57,13 +60,30 @@ function BoardMemoPage() {
         visibleNoteIds.has(node.noteId),
     )
 
+    const visibleNodeIds = new Set(
+        visibleNodes.map((node) => node.id),
+    )
+
+    const visibleEdges = boardEdges.filter(
+        (edge) =>
+            visibleNodeIds.has(edge.sourceNodeId) &&
+            visibleNodeIds.has(edge.targetNodeId),
+    )
+
     const openedNote =
         notes.find((note) => note.id === openedNoteId) ?? null
 
     function handleToolChange(nextMode) {
+        setPendingNodeId(null)
+
         setToolMode((currentMode) =>
             currentMode === nextMode ? 'select' : nextMode,
         )
+    }
+
+    function handleSelectTool() {
+        setToolMode('select')
+        setOpenedNoteId(null)
     }
 
     function handleBoardWheel(event) {
@@ -274,9 +294,58 @@ function BoardMemoPage() {
 
         setDraggingNodeId(null)
 
-        if (shouldOpenNote && toolMode === 'select') {
-            setOpenedNoteId(node.noteId)
+        if (!shouldOpenNote) {
+            return
         }
+
+        if (toolMode === 'select') {
+            setOpenedNoteId(node.noteId)
+            return
+        }
+
+        if (toolMode === 'link') {
+            handleLinkNode(node.id)
+        }
+    }
+
+    function handleLinkNode(nodeId) {
+        if (pendingNodeId === null) {
+            setPendingNodeId(nodeId)
+            return
+        }
+
+        if (pendingNodeId === nodeId) {
+            setPendingNodeId(null)
+            return
+        }
+
+        setBoardEdges((currentEdges) => {
+            const alreadyConnected = currentEdges.some((edge) => {
+                const sameDirection =
+                    edge.sourceNodeId === pendingNodeId &&
+                    edge.targetNodeId === nodeId
+
+                const oppositeDirection =
+                    edge.sourceNodeId === nodeId &&
+                    edge.targetNodeId === pendingNodeId
+
+                return sameDirection || oppositeDirection
+            })
+
+            if (alreadyConnected) {
+                return currentEdges
+            }
+
+            return [
+                ...currentEdges,
+                {
+                    id: `edge-${Date.now()}`,
+                    sourceNodeId: pendingNodeId,
+                    targetNodeId: nodeId,
+                }
+            ]
+        })
+        setPendingNodeId(null)
     }
 
     return (
@@ -298,7 +367,7 @@ function BoardMemoPage() {
                     }`}
                     type="button"
                     aria-pressed={toolMode === 'select'}
-                    onClick={() => setToolMode('select')}
+                    onClick={handleSelectTool}
                     >
                     SELECT
                 </button>
@@ -361,6 +430,34 @@ function BoardMemoPage() {
                             `,
                     }}
                 >
+                    <svg
+                        className="memo-board-edges"
+                        aria-hidden="true"
+                        >
+                        {visibleEdges.map((edge) => {
+                            const sourceNode = boardNodes.find(
+                                (node) => node.id === edge.sourceNodeId,
+                            )
+
+                            const targetNode = boardNodes.find(
+                                (node) => node.id === edge.targetNodeId,
+                            )
+
+                            if (!sourceNode || !targetNode) {
+                                return null
+                            }
+
+                            return (
+                                <line
+                                    key={edge.id}
+                                    x1={sourceNode.x + 110}
+                                    y1={sourceNode.y + 75}
+                                    x2={targetNode.x + 110}
+                                    y2={targetNode.y + 75}
+                                />
+                            )
+                        })}
+                    </svg>
                     {visibleNodes.map((node) => {
                         const note = notes.find(
                             (item) => item.id === node.noteId
@@ -375,6 +472,10 @@ function BoardMemoPage() {
                                 className={`memo-board-card ${
                                     draggingNodeId === node.id
                                         ? 'memo-board-card--dragging'
+                                        : ''
+                                } ${
+                                    pendingNodeId === node.id
+                                    ? 'memo-board-card--link-pending'
                                         : ''
                                 }`}
                                 key={node.id}

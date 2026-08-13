@@ -6,6 +6,7 @@
     flex-direction: column;
     overflow: hidden;
     background: var(--surface);
+    position: relative;
 }
 
 .memo-board-toolbar {
@@ -139,5 +140,13 @@
 }
 
 .memo-board-card {
-    cursor: default;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.memo-board-card--dragging {
+    z-index: 3;
+    cursor: grabbing;
+    box-shadow: 7px 7px 0 #9f845a;
 }

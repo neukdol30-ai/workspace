@@ -36,3 +36,5 @@ export const initialBoardNodes = [
         y: 240,
     },
 ]
+
+export const initialBoardEdges = []

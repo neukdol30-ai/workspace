@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { initialFolders, initialNotes, initialBoardNodes, } from './memoData.js'
+import { initialFolders, initialNotes, initialBoardNodes, initialBoardEdges } from './memoData.js'
 import './MemoLayout.css'
 
 function MemoLayout({ hideFolderList }) {
@@ -10,6 +10,7 @@ function MemoLayout({ hideFolderList }) {
         initialNotes[0]?.id ?? null
     )
     const [boardNodes, setBoardNodes] = useState(initialBoardNodes)
+    const [boardEdges, setBoardEdges] = useState(initialBoardEdges)
 
     const selectedNote =
         notes.find((note) => note.id === selectedNoteId) ?? null
@@ -92,6 +93,8 @@ function MemoLayout({ hideFolderList }) {
                         notes,
                         boardNodes,
                         setBoardNodes,
+                        boardEdges,
+                        setBoardEdges,
                         selectedFolderId,
                         selectedNoteId,
                         selectedNote,

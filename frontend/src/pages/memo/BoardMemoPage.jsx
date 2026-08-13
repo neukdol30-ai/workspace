@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import BoardNoteDetail from './BoardNoteDetail.jsx'
 import './BoardMemoPage.css'
 
 function BoardMemoPage() {
@@ -16,6 +17,7 @@ function BoardMemoPage() {
         y: 0,
     })
 
+    const [boardScale, setBoardScale] = useState(1)
     const [isBoardDragging, setIsBoardDragging] = useState(false)
 
     const boardDragRef = useRef({
@@ -27,6 +29,8 @@ function BoardMemoPage() {
     })
 
     const [draggingNodeId, setDraggingNodeId] = useState(null)
+    const [openedNoteId, setOpenedNoteId] = useState(null)
+    const [toolMode, setToolMode] = useState('select')
 
     const cardDragRef = useRef({
         active: false,
@@ -52,6 +56,57 @@ function BoardMemoPage() {
     const visibleNodes = boardNodes.filter((node) =>
         visibleNoteIds.has(node.noteId),
     )
+
+    const openedNote =
+        notes.find((note) => note.id === openedNoteId) ?? null
+
+    function handleBoardWheel(event) {
+
+        if (
+            openedNote ||
+            cardDragRef.current.active ||
+            boardDragRef.current.active
+        ) {
+            return
+        }
+
+        const viewportRect =
+            event.currentTarget.getBoundingClientRect()
+
+        const pointerX =
+            event.clientX - viewportRect.left
+
+        const pointerY =
+            event.clientY - viewportRect.top
+
+        const scaleDirection =
+            event.deltaY < 0 ? 0.1 : -0.1
+
+        const nextScale = Math.min(
+            2,
+            Math.max(
+                0.5,
+                Number((boardScale + scaleDirection). toFixed(1)),
+            ),
+        )
+
+        if (nextScale === boardScale) {
+            return
+        }
+
+        const worldX =
+            (pointerX - boardOffset.x) / boardScale
+
+        const worldY =
+            (pointerY - boardOffset.y) / boardScale
+
+        setBoardOffset({
+            x: pointerX - worldX * nextScale,
+            y: pointerY - worldY * nextScale,
+        })
+
+        setBoardScale(nextScale)
+    }
 
     function handleBoardPointerDown(event) {
         if (event.pointerType === 'mouse' && event.button !== 0) {
@@ -111,7 +166,7 @@ function BoardMemoPage() {
             return
         }
 
-        event.soptPropagation()
+        event.stopPropagation()
         event.currentTarget.setPointerCapture(event.pointerId)
 
         cardDragRef.current = {
@@ -125,6 +180,23 @@ function BoardMemoPage() {
         }
 
         setDraggingNodeId(node.id)
+
+        setBoardNodes((currentNodes) => {
+            const selectedNode = currentNodes.find(
+                (currentNode) => currentNode.id === node.id,
+            )
+
+            if (!selectedNode) {
+                return currentNodes
+            }
+
+            return [
+                ...currentNodes.filter(
+                    (currentNode) => currentNode.id !== node.id,
+                ),
+                selectedNode,
+            ]
+        })
     }
 
     function handleCardPointerMove(event, node) {
@@ -137,24 +209,30 @@ function BoardMemoPage() {
 
         event.stopPropagation()
 
-        const distanceX =
+        const screenDistanceX =
             event.clientX - cardDragRef.current.startX
 
-        const distanceY =
+        const screenDistanceY =
             event.clientY - cardDragRef.current.startY
 
+        const distanceX =
+            screenDistanceX / boardScale
+
+        const distanceY =
+            screenDistanceY / boardScale
+
         if (
-            Math.abs(distanceX) > 5 ||
-            Math.abs(distanceY) > 5
+            Math.abs(screenDistanceX) > 5 ||
+            Math.abs(screenDistanceY) > 5
         ) {
             cardDragRef.current.didMove = true
         }
 
         setBoardNodes((currentNodes) =>
             currentNodes.map((currentNode) =>
-                currentNodes.id === node.id
+                currentNode.id === node.id
                 ? {
-                ...currentNodes,
+                ...currentNode,
                     x:
                         cardDragRef.current.startNodeX +
                         distanceX,
@@ -163,7 +241,7 @@ function BoardMemoPage() {
                         cardDragRef.current.startNodeY +
                         distanceY,
                     }
-                    :currentNodes,
+                    :currentNode,
             ),
         )
     }
@@ -177,13 +255,22 @@ function BoardMemoPage() {
         }
 
         event.stopPropagation()
-        cardDragRef.current.didMove = false
+
+        const shouldOpenNote =
+            event.type === 'pointerup' &&
+            !cardDragRef.current.didMove
+
+        cardDragRef.current.active = false
 
         if(event.currentTarget.hasPointerCapture(event.pointerId)) {
             event.currentTarget.releasePointerCapture(event.pointerId)
         }
 
         setDraggingNodeId(null)
+
+        if (shouldOpenNote) {
+            setOpenedNoteId(node.noteId)
+        }
     }
 
     return (
@@ -214,7 +301,7 @@ function BoardMemoPage() {
                 </button>
 
                 <span className="memo-board-scale">
-                    100%
+                    {Math.round(boardScale * 100)}%
                 </span>
             </div>
 
@@ -227,17 +314,22 @@ function BoardMemoPage() {
                 style={{
                     backgroundPosition:
                         `${boardOffset.x}px ${boardOffset.y}px`,
+                    backgroundSize:
+                    `${32 * boardScale}px ${32 * boardScale}px`,
                 }}
                 onPointerDown={handleBoardPointerDown}
                 onPointerMove={handleBoardPointerMove}
                 onPointerUp={handleBoardPointerEnd}
                 onPointerCancel={handleBoardPointerEnd}
+                onWheel={handleBoardWheel}
             >
                 <div
                     className="memo-board-world"
                     style={{
                         transform:
-                            `translate(${boardOffset.x}px, ${boardOffset.y}px)`,
+                            `translate(${boardOffset.x}px, ${boardOffset.y}px)
+                            scale(${boardScale})
+                            `,
                     }}
                 >
                     {visibleNodes.map((node) => {
@@ -251,12 +343,28 @@ function BoardMemoPage() {
 
                         return (
                             <article
-                                className="memo-board-card"
+                                className={`memo-board-card ${
+                                    draggingNodeId === node.id
+                                        ? 'memo-board-card--dragging'
+                                        : ''
+                                }`}
                                 key={node.id}
                                 style={{
                                     left: `${node.x}px`,
                                     top: `${node.y}px`,
                                 }}
+                                onPointerDown={(event) =>
+                                    handleCardPointerDown(event, node)
+                                }
+                                onPointerMove={(event) =>
+                                    handleCardPointerMove(event, node)
+                                }
+                                onPointerUp={(event) =>
+                                    handleCardPointerEnd(event, node)
+                                }
+                                onPointerCancel={(event) =>
+                                    handleCardPointerEnd(event, node)
+                                }
                                 >
                                 <div className="memo-board-card-heading">
                                     <strong>
@@ -281,8 +389,14 @@ function BoardMemoPage() {
                     })}
                 </div>
             </div>
-        </section>
 
+            {openedNote && (
+                <BoardNoteDetail
+                    note={openedNote}
+                    onClose={() => setOpenedNoteId(null)}
+                />
+            )}
+        </section>
     )
 }
 

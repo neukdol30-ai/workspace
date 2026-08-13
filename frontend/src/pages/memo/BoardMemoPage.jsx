@@ -187,6 +187,25 @@ function BoardMemoPage() {
         setIsBoardDragging(false)
     }
 
+    function bringNodeToFront(nodeId) {
+        setBoardNodes((currentNodes) => {
+            const selectedNode = currentNodes.find(
+                (currentNode) => currentNode.id === nodeId,
+            )
+
+            if (!selectedNode) {
+                return currentNodes
+            }
+
+            return [
+                ...currentNodes.filter(
+                    (currentNode) => currentNode.id !== nodeId,
+                ),
+                selectedNode,
+            ]
+        })
+    }
+
     function handleCardPointerDown(event, node) {
         if (event.pointerType === 'mouse' && event.button !== 0) {
             return
@@ -207,22 +226,22 @@ function BoardMemoPage() {
 
         setDraggingNodeId(node.id)
 
-        setBoardNodes((currentNodes) => {
-            const selectedNode = currentNodes.find(
-                (currentNode) => currentNode.id === node.id,
-            )
-
-            if (!selectedNode) {
-                return currentNodes
-            }
-
-            return [
-                ...currentNodes.filter(
-                    (currentNode) => currentNode.id !== node.id,
-                ),
-                selectedNode,
-            ]
-        })
+        // setBoardNodes((currentNodes) => {
+        //     const selectedNode = currentNodes.find(
+        //         (currentNode) => currentNode.id === node.id,
+        //     )
+        //
+        //     if (!selectedNode) {
+        //         return currentNodes
+        //     }
+        //
+        //     return [
+        //         ...currentNodes.filter(
+        //             (currentNode) => currentNode.id !== node.id,
+        //         ),
+        //         selectedNode,
+        //     ]
+        // })
     }
 
     function handleCardPointerMove(event, node) {
@@ -293,6 +312,7 @@ function BoardMemoPage() {
         }
 
         setDraggingNodeId(null)
+        bringNodeToFront(node.id)
 
         if (!shouldOpenNote) {
             return

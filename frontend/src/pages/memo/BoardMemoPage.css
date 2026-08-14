@@ -140,6 +140,8 @@
 }
 
 .memo-board-card {
+    position: absolute;
+    isolation: isolate;
     cursor: grab;
     touch-action: none;
     user-select: none;
@@ -167,6 +169,7 @@
 .memo-board-edges {
     position: absolute;
     inset: 0;
+    z-index: 4;
     width: 100%;
     height: 100%;
     overflow: visible;
@@ -182,4 +185,17 @@
 .memo-board-card--link-pending {
     outline: 3px double var(--ink);
     outline-offset: 4px;
+}
+
+.memo-board-pin {
+    fill: var(--surface);
+    stroke: var(--ink);
+    stroke-width: 3;
+    pointer-events: none;
+}
+
+.memo-board-pin--pending {
+    fill: var(--ink);
+    stroke: var(--surface);
+    stroke-width: 4;
 }

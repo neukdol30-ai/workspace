@@ -25,9 +25,17 @@ function MemoLayout({ hideFolderList }) {
         setSelectedNoteId(nextVisibleNotes[0]?.id ?? null)
     }
 
-    function createNote() {
+    function createNote(options = {}) {
+        const requestedBoardPosition = options?.boardPosition
+
+        const hasRequestedBoardPosition =
+            Number.isFinite(requestedBoardPosition?.x) &&
+            Number.isFinite(requestedBoardPosition?.y)
+
         const folderId =
-            selectedFolderId === 'all' ? 'inbox' : selectedFolderId
+            selectedFolderId === 'all'
+                ? 'inbox'
+                : selectedFolderId
 
         const newNote = {
             id: Date.now(),
@@ -37,21 +45,30 @@ function MemoLayout({ hideFolderList }) {
             updatedAt: '방금 전',
         }
 
-        setNotes((currentNotes) => [newNote, ...currentNotes])
+        setNotes((current) => [newNote, ...current])
         setSelectedNoteId(newNote.id)
 
         setBoardNodes((currentNodes) => {
-          const index = currentNodes.length
+            const index = currentNodes.length
 
-          return [
-              ...currentNodes,
-              {
-                  id: `node-${newNote.id}`,
-                  noteId: newNote.id,
-                  x: 80 + (index % 4) * 260,
-                  y: 80 + Math.floor(index / 4) * 200,
-              }
-          ]
+            const fallbackX = 80 + (index % 4) * 260
+            const fallbackY = 80 + Math.floor(index / 4) * 200
+
+            return [
+                ...currentNodes,
+                {
+                    id: `node-${newNote.id}`,
+                    noteId: newNote.id,
+
+                    x: hasRequestedBoardPosition
+                        ? requestedBoardPosition.x
+                        : fallbackX,
+
+                    y: hasRequestedBoardPosition
+                        ? requestedBoardPosition.y
+                        : fallbackY,
+                },
+            ]
         })
     }
 

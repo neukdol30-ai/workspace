@@ -3,6 +3,13 @@ import { useOutletContext } from 'react-router-dom'
 import BoardNoteDetail from './BoardNoteDetail.jsx'
 import './BoardMemoPage.css'
 
+const CARD_CENTER_X = 110
+const CARD_CENTER_Y = 75
+const CARD_PIN_Y = 10
+
+const CREATE_CASCADE_GAP = 24
+const CREATE_CASCADE_COUNT = 7
+
 function BoardMemoPage() {
     const {
         notes,
@@ -29,6 +36,9 @@ function BoardMemoPage() {
         startOffsetX: 0,
         startOffsetY: 0,
     })
+
+    const boardViewportRef = useRef(null)
+    const createCascadeRef = useRef(0)
 
     const [draggingNodeId, setDraggingNodeId] = useState(null)
     const [openedNoteId, setOpenedNoteId] = useState(null)
@@ -70,6 +80,20 @@ function BoardMemoPage() {
             visibleNodeIds.has(edge.targetNodeId),
     )
 
+    const connectedNodeIds = new Set(
+        visibleEdges.flatMap((edge) => [
+            edge.sourceNodeId,
+            edge.targetNodeId,
+        ]),
+    )
+
+    const visiblePinNodes =
+        toolMode === 'link'
+            ? visibleNodes
+            : visibleNodes.filter((node) =>
+                connectedNodeIds.has(node.id),
+            )
+
     const openedNote =
         notes.find((note) => note.id === openedNoteId) ?? null
 
@@ -84,6 +108,40 @@ function BoardMemoPage() {
     function handleSelectTool() {
         setToolMode('select')
         setOpenedNoteId(null)
+    }
+
+    function handleCreateBoardNote() {
+        const viewport = boardViewportRef.current
+
+        if (!viewport) {
+            createNote()
+            return
+        }
+
+        const cascadeIndex = createCascadeRef.current
+
+        createCascadeRef.current =
+            (cascadeIndex + 1) % CREATE_CASCADE_COUNT
+
+        const centerWorldX =
+            (viewport.clientWidth / 2 - boardOffset.x) / boardScale
+
+        const centerWorldY =
+            (viewport.clientHeight / 2 - boardOffset.y) / boardScale
+
+        createNote({
+            boardPosition: {
+                x:
+                    centerWorldX -
+                    CARD_CENTER_X +
+                    cascadeIndex * CREATE_CASCADE_GAP,
+
+                y:
+                    centerWorldY -
+                    CARD_CENTER_Y +
+                    cascadeIndex * CREATE_CASCADE_GAP,
+            },
+        })
     }
 
     function handleBoardWheel(event) {
@@ -325,6 +383,11 @@ function BoardMemoPage() {
 
         if (toolMode === 'link') {
             handleLinkNode(node.id)
+            return
+        }
+
+        if (toolMode === 'unlink') {
+            handleUnlinkNode(node.id)
         }
     }
 
@@ -368,13 +431,40 @@ function BoardMemoPage() {
         setPendingNodeId(null)
     }
 
+    function handleUnlinkNode(nodeId) {
+        if (pendingNodeId === null) {
+            setPendingNodeId(nodeId)
+            return
+        }
+
+        if (pendingNodeId === nodeId) {
+            setPendingNodeId(null)
+            return
+        }
+
+        setBoardEdges((currentEdges) =>
+            currentEdges.filter((edge) => {
+                const sameDirection =
+                    edge.sourceNodeId === pendingNodeId &&
+                    edge.targetNodeId === nodeId
+
+                    const oppositeDirection =
+                        edge.sourceNodeId === nodeId &&
+                        edge.targetNodeId === pendingNodeId
+
+                return !sameDirection && !oppositeDirection
+            }),
+        )
+        setPendingNodeId(null)
+    }
+
     return (
         <section className="memo-board" aria-label="memo board">
             <div className="memo-board-toolbar">
                 <button
                     className="memo-board-tool"
                     type="button"
-                    onClick={createNote}
+                    onClick={handleCreateBoardNote}
                 >
                     + NEW
                 </button>
@@ -424,6 +514,7 @@ function BoardMemoPage() {
             </div>
 
             <div
+                ref={boardViewportRef}
                 className={`memo-board-viewport ${
                     isBoardDragging
                         ? 'memo-board-viewport--dragging'
@@ -453,7 +544,7 @@ function BoardMemoPage() {
                     <svg
                         className="memo-board-edges"
                         aria-hidden="true"
-                        >
+                    >
                         {visibleEdges.map((edge) => {
                             const sourceNode = boardNodes.find(
                                 (node) => node.id === edge.sourceNodeId,
@@ -470,17 +561,32 @@ function BoardMemoPage() {
                             return (
                                 <line
                                     key={edge.id}
-                                    x1={sourceNode.x + 110}
-                                    y1={sourceNode.y + 75}
-                                    x2={targetNode.x + 110}
-                                    y2={targetNode.y + 75}
+                                    x1={sourceNode.x + CARD_CENTER_X}
+                                    y1={sourceNode.y + CARD_PIN_Y}
+                                    x2={targetNode.x + CARD_CENTER_X}
+                                    y2={targetNode.y + CARD_PIN_Y}
                                 />
                             )
                         })}
+
+                        {visiblePinNodes.map((node) => (
+                            <circle
+                                className={`memo-board-pin ${
+                                    pendingNodeId === node.id
+                                        ? 'memo-board-pin--pending'
+                                        : ''
+                                }`}
+                                key={`pin-${node.id}`}
+                                cx={node.x + CARD_CENTER_X}
+                                cy={node.y + CARD_PIN_Y}
+                                r="6"
+                            />
+                        ))}
                     </svg>
+
                     {visibleNodes.map((node) => {
                         const note = notes.find(
-                            (item) => item.id === node.noteId
+                            (item) => item.id === node.noteId,
                         )
 
                         if (!note) {
@@ -495,7 +601,7 @@ function BoardMemoPage() {
                                         : ''
                                 } ${
                                     pendingNodeId === node.id
-                                    ? 'memo-board-card--link-pending'
+                                        ? 'memo-board-card--link-pending'
                                         : ''
                                 }`}
                                 key={node.id}
@@ -515,7 +621,7 @@ function BoardMemoPage() {
                                 onPointerCancel={(event) =>
                                     handleCardPointerEnd(event, node)
                                 }
-                                >
+                            >
                                 <div className="memo-board-card-heading">
                                     <strong>
                                         {note.title || '제목 없음'}

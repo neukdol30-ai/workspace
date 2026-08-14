@@ -32,6 +32,11 @@
     touch-action: none;
 }
 
+.memo-board-viewport--dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+
 .memo-board-world {
     position: absolute;
     inset: 0;

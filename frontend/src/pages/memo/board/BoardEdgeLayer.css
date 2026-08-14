@@ -1,0 +1,28 @@
+.memo-board-edges {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.memo-board-edges line {
+    stroke: var(--line);
+    stroke-width: 3;
+    stroke-linecap: square;
+}
+
+.memo-board-pin {
+    fill: var(--surface);
+    stroke: var(--ink);
+    stroke-width: 3;
+    pointer-events: none;
+}
+
+.memo-board-pin--pending {
+    fill: var(--ink);
+    stroke: var(--surface);
+    stroke-width: 4;
+}

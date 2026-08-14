@@ -1,0 +1,68 @@
+.memo-board-card {
+    position: absolute;
+    isolation: isolate;
+    display: flex;
+    width: 220px;
+    min-height: 150px;
+    flex-direction: column;
+    border: 2px solid var(--line);
+    color: var(--ink);
+    cursor: grab;
+    background: #d2bb91;
+    box-shadow: 4px 4px 0 #b59b70;
+    touch-action: none;
+    user-select: none;
+}
+
+.memo-board-card-heading {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.memo-board-card-heading strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.78rem;
+}
+
+.memo-board-card-heading span {
+    flex: none;
+    font-size: 0.62rem;
+    opacity: 0.65;
+}
+
+.memo-board-card-content {
+    display: -webkit-box;
+    flex: 1;
+    overflow: hidden;
+    margin: 0;
+    padding: 12px 10px;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.memo-board-card-footer {
+    flex: 0 0 12px;
+    border-top: 1px solid var(--line);
+    background: var(--ink);
+}
+
+.memo-board-card--dragging {
+    z-index: 3;
+    cursor: grabbing;
+    box-shadow: 7px 7px 0 #9f845a;
+}
+
+.memo-board-card--link-pending {
+    outline: 3px double var(--ink);
+    outline-offset: 4px;
+}

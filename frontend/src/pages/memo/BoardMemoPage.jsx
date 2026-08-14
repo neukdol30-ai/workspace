@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import BoardNoteDetail from './BoardNoteDetail.jsx'
+import BoardNoteDetail from './board/BoardNoteDetail.jsx'
+import BoardNoteCard from './board/BoardNoteCard.jsx'
+import BoardEdgeLayer from './board/BoardEdgeLayer.jsx'
+import BoardToolbar from './board/BoardToolbar.jsx'
 import './BoardMemoPage.css'
 
 const CARD_CENTER_X = 110
@@ -460,58 +463,13 @@ function BoardMemoPage() {
 
     return (
         <section className="memo-board" aria-label="memo board">
-            <div className="memo-board-toolbar">
-                <button
-                    className="memo-board-tool"
-                    type="button"
-                    onClick={handleCreateBoardNote}
-                >
-                    + NEW
-                </button>
-
-                <button
-                    className={`memo-board-tool ${
-                        toolMode === 'select'
-                            ? 'memo-board-tool--active'
-                            : ''
-                    }`}
-                    type="button"
-                    aria-pressed={toolMode === 'select'}
-                    onClick={handleSelectTool}
-                    >
-                    SELECT
-                </button>
-
-                <button
-                    className={`memo-board-tool ${
-                        toolMode === 'link'
-                            ? 'memo-board-tool--active'
-                            : ''
-                    }`}
-                    type="button"
-                    aria-pressed={toolMode === 'link'}
-                    onClick={() => handleToolChange('link')}
-                >
-                    LINK
-                </button>
-
-                <button
-                    className={`memo-board-tool ${
-                        toolMode === 'unlink'
-                            ? 'memo-board-tool--active'
-                            : ''
-                    }`}
-                    type="button"
-                    aria-pressed={toolMode === 'unlink'}
-                    onClick={() => handleToolChange('unlink')}
-                    >
-                    UNLINK
-                </button>
-
-                <span className="memo-board-scale">
-                    {Math.round(boardScale * 100)}%
-                </span>
-            </div>
+            <BoardToolbar
+                toolMode={toolMode}
+                boardScale={boardScale}
+                onCreateNote={handleCreateBoardNote}
+                onSelectTool={handleSelectTool}
+                onToolChange={handleToolChange}
+            />
 
             <div
                 ref={boardViewportRef}
@@ -541,48 +499,14 @@ function BoardMemoPage() {
                             `,
                     }}
                 >
-                    <svg
-                        className="memo-board-edges"
-                        aria-hidden="true"
-                    >
-                        {visibleEdges.map((edge) => {
-                            const sourceNode = boardNodes.find(
-                                (node) => node.id === edge.sourceNodeId,
-                            )
-
-                            const targetNode = boardNodes.find(
-                                (node) => node.id === edge.targetNodeId,
-                            )
-
-                            if (!sourceNode || !targetNode) {
-                                return null
-                            }
-
-                            return (
-                                <line
-                                    key={edge.id}
-                                    x1={sourceNode.x + CARD_CENTER_X}
-                                    y1={sourceNode.y + CARD_PIN_Y}
-                                    x2={targetNode.x + CARD_CENTER_X}
-                                    y2={targetNode.y + CARD_PIN_Y}
-                                />
-                            )
-                        })}
-
-                        {visiblePinNodes.map((node) => (
-                            <circle
-                                className={`memo-board-pin ${
-                                    pendingNodeId === node.id
-                                        ? 'memo-board-pin--pending'
-                                        : ''
-                                }`}
-                                key={`pin-${node.id}`}
-                                cx={node.x + CARD_CENTER_X}
-                                cy={node.y + CARD_PIN_Y}
-                                r="6"
-                            />
-                        ))}
-                    </svg>
+                    <BoardEdgeLayer
+                        boardNodes={boardNodes}
+                        visibleEdges={visibleEdges}
+                        visiblePinNodes={visiblePinNodes}
+                        pendingNodeId={pendingNodeId}
+                        cardCenterX={CARD_CENTER_X}
+                        cardPinY={CARD_PIN_Y}
+                    />
 
                     {visibleNodes.map((node) => {
                         const note = notes.find(
@@ -594,53 +518,17 @@ function BoardMemoPage() {
                         }
 
                         return (
-                            <article
-                                className={`memo-board-card ${
-                                    draggingNodeId === node.id
-                                        ? 'memo-board-card--dragging'
-                                        : ''
-                                } ${
-                                    pendingNodeId === node.id
-                                        ? 'memo-board-card--link-pending'
-                                        : ''
-                                }`}
+                            <BoardNoteCard
                                 key={node.id}
-                                style={{
-                                    left: `${node.x}px`,
-                                    top: `${node.y}px`,
-                                }}
-                                onPointerDown={(event) =>
-                                    handleCardPointerDown(event, node)
-                                }
-                                onPointerMove={(event) =>
-                                    handleCardPointerMove(event, node)
-                                }
-                                onPointerUp={(event) =>
-                                    handleCardPointerEnd(event, node)
-                                }
-                                onPointerCancel={(event) =>
-                                    handleCardPointerEnd(event, node)
-                                }
-                            >
-                                <div className="memo-board-card-heading">
-                                    <strong>
-                                        {note.title || '제목 없음'}
-                                    </strong>
-
-                                    <span>
-                                        {note.updatedAt}
-                                    </span>
-                                </div>
-
-                                <p className="memo-board-card-content">
-                                    {note.content || '내용 없음'}
-                                </p>
-
-                                <div
-                                    className="memo-board-card-footer"
-                                    aria-hidden="true"
-                                    />
-                            </article>
+                                node={node}
+                                note={note}
+                                isDragging={draggingNodeId === node.id}
+                                isLinkPending={pendingNodeId === node.id}
+                                onPointerDown={handleCardPointerDown}
+                                onPointerMove={handleCardPointerMove}
+                                onPointerUp={handleCardPointerEnd}
+                                onPointerCancel={handleCardPointerEnd}
+                            />
                         )
                     })}
                 </div>

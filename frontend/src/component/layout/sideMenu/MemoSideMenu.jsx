@@ -1,7 +1,15 @@
 import { MdChevronLeft } from 'react-icons/md'
+import { useMemoContext } from '../../../context/MemoContext.js'
 import './MemoSideMenu.css'
 
 function MemoSideMenu({ onReturnGlobal }) {
+    const {
+        folders,
+        notes,
+        selectedFolderId,
+        selectFolder,
+    } = useMemoContext()
+
     return (
         <section
             className="side-menu-pane memo-side-menu"
@@ -20,18 +28,62 @@ function MemoSideMenu({ onReturnGlobal }) {
             <div className="side-menu-local-content">
                 <div className="side-menu-heading">
                     <span>FOLDERS</span>
-                    <span>00</span>
+
+                    <span>
+                        {String(folders.length).padStart(2, '0')}
+                    </span>
                 </div>
 
-                <div className="side-menu-local-empty">
-                    FOLDER MENU
+                <div className="memo-side-folder-list">
+                    {folders.map((folder) => {
+                        const noteCount =
+                            folder.id === 'all'
+                                ? notes.length
+                                : notes.filter(
+                                    (note) =>
+                                        note.folderId === folder.id,
+                                ).length
+
+                        const isSelected =
+                            folder.id === selectedFolderId
+
+                        return (
+                            <button
+                                className={`memo-side-folder-item ${
+                                    isSelected
+                                        ? 'memo-side-folder-item--active'
+                                        : ''
+                                }`}
+                                key={folder.id}
+                                type="button"
+                                aria-pressed={isSelected}
+                                onClick={() =>
+                                    selectFolder(folder.id)
+                                }
+                            >
+                                <span className="memo-side-folder-name">
+                                    {folder.name}
+                                </span>
+
+                                <span className="memo-side-folder-count">
+                                    {String(noteCount).padStart(
+                                        2,
+                                        '0',
+                                    )}
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
 
                 <div className="side-menu-spacer" />
 
                 <div className="side-menu-footer">
-                    <span>LOCAL</span>
-                    <span>00</span>
+                    <span>MEMOS</span>
+
+                    <span>
+                        {String(notes.length).padStart(2, '0')}
+                    </span>
                 </div>
             </div>
         </section>

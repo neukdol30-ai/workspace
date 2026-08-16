@@ -286,23 +286,6 @@ function BoardMemoPage() {
         }
 
         setDraggingNodeId(node.id)
-
-        // setBoardNodes((currentNodes) => {
-        //     const selectedNode = currentNodes.find(
-        //         (currentNode) => currentNode.id === node.id,
-        //     )
-        //
-        //     if (!selectedNode) {
-        //         return currentNodes
-        //     }
-        //
-        //     return [
-        //         ...currentNodes.filter(
-        //             (currentNode) => currentNode.id !== node.id,
-        //         ),
-        //         selectedNode,
-        //     ]
-        // })
     }
 
     function handleCardPointerMove(event, node) {

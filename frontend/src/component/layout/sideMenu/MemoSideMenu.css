@@ -42,10 +42,63 @@
     flex-direction: column;
 }
 
-.side-menu-local-empty {
-    padding: 14px 10px;
+.memo-side-folder-list {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.memo-side-folder-list::-webkit-scrollbar {
+    display: none;
+}
+
+.memo-side-folder-item {
+    display: grid;
+    width: 100%;
+    min-height: 42px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px;
+    border: 0;
     border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    background: var(--surface);
+    font: inherit;
     font-size: 0.72rem;
     font-weight: 700;
-    opacity: 0.55;
+    letter-spacing: 0.05em;
+}
+
+.memo-side-folder-item:not(
+    .memo-side-folder-item--active
+):hover {
+    background: #d2bb91;
+}
+
+.memo-side-folder-item:focus-visible {
+    outline: 1px dashed currentColor;
+    outline-offset: -4px;
+}
+
+.memo-side-folder-item--active {
+    color: var(--surface);
+    background: var(--ink);
+    box-shadow:
+            inset 0 0 0 2px var(--surface),
+            inset 0 0 0 3px var(--line);
+}
+
+.memo-side-folder-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.memo-side-folder-count {
+    font-variant-numeric: tabular-nums;
 }

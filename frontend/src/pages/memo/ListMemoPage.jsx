@@ -1,7 +1,14 @@
+import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { MdDeleteOutline } from 'react-icons/md'
+import ConfirmDialog from '../../component/common/ConfirmDialog.jsx'
 import './ListMemoPage.css'
 
 function ListMemoPage() {
+
+    const [notePendingDelete, setNotePendingDelete] =
+        useState(null)
+
     const {
         folders,
         notes,
@@ -12,6 +19,7 @@ function ListMemoPage() {
         selectFolder,
         createNote,
         updateSelectedNote,
+        deleteNote,
         hideFolderList,
     } = useOutletContext()
 
@@ -19,6 +27,23 @@ function ListMemoPage() {
         selectedFolderId === 'all'
             ? notes
             : notes.filter((note) => note.folderId === selectedFolderId)
+
+    function handleDeleteSelectedNote() {
+        if (!selectedNote) {
+            return
+        }
+
+        setNotePendingDelete(selectedNote)
+    }
+
+    function handleConfirmDelete() {
+        if (!notePendingDelete) {
+            return
+        }
+
+        deleteNote(notePendingDelete.id)
+        setNotePendingDelete(null)
+    }
 
     return (
         <div
@@ -64,14 +89,26 @@ function ListMemoPage() {
                 <div className="memo-column-heading">
                     <span>MEMO</span>
 
-                    <button
-                        className="memo-create-button"
-                        type="button"
-                        aria-label="Create note"
-                        onClick={createNote}
-                    >
-                        +
-                    </button>
+                    <div className="memo-column-actions">
+                        <button
+                            className="memo-delete-button"
+                            type="button"
+                            aria-label="Delete selected note"
+                            disabled={!selectedNote}
+                            onClick={handleDeleteSelectedNote}
+                        >
+                            <MdDeleteOutline aria-hidden="true" />
+                        </button>
+
+                        <button
+                            className="memo-create-button"
+                            type="button"
+                            aria-label="Create note"
+                            onClick={() => createNote()}
+                        >
+                            +
+                        </button>
+                    </div>
                 </div>
 
                 <div className="memo-note-list">
@@ -125,6 +162,18 @@ function ListMemoPage() {
                     </div>
                 )}
             </article>
+            <ConfirmDialog
+                isOpen={notePendingDelete !== null}
+                title="DELETE MEMO"
+                message={
+                    `"${notePendingDelete?.title.trim() || '제목 없음'}" ` +
+                    '메모를 삭제할까요?'
+                }
+                confirmLabel="DELETE"
+                cancelLabel="CANCEL"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setNotePendingDelete(null)}
+            />
         </div>
     )
 }

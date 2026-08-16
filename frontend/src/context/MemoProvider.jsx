@@ -91,6 +91,68 @@ function MemoProvider({ children }) {
         })
     }
 
+    function deleteNote(noteId) {
+        const visibleNotesBeforeDeletion =
+            selectedFolderId === 'all'
+                ? notes
+                : notes.filter(
+                    (note) =>
+                        note.folderId === selectedFolderId,
+                )
+
+        const deletedNoteIndex =
+            visibleNotesBeforeDeletion.findIndex(
+                (note) => note.id === noteId,
+            )
+
+        const remainingNotes = notes.filter(
+            (note) => note.id !== noteId,
+        )
+
+        const remainingVisibleNotes =
+            selectedFolderId === 'all'
+                ? remainingNotes
+                : remainingNotes.filter(
+                    (note) =>
+                        note.folderId === selectedFolderId,
+                )
+
+        const deletedNodeIds = new Set(
+            boardNodes
+                .filter((node) => node.noteId === noteId)
+                .map((node) => node.id),
+        )
+
+        setNotes(remainingNotes)
+
+        setBoardNodes((currentNodes) =>
+            currentNodes.filter(
+                (node) => node.noteId !== noteId,
+            ),
+        )
+
+        setBoardEdges((currentEdges) =>
+            currentEdges.filter(
+                (edge) =>
+                    !deletedNodeIds.has(edge.sourceNodeId) &&
+                    !deletedNodeIds.has(edge.targetNodeId),
+            ),
+        )
+
+        if (selectedNoteId !== noteId) {
+            return
+        }
+
+        const nextNoteIndex = Math.min(
+            Math.max(deletedNoteIndex, 0),
+            remainingVisibleNotes.length - 1,
+        )
+
+        setSelectedNoteId(
+            remainingVisibleNotes[nextNoteIndex]?.id ?? null,
+        )
+    }
+
     function updateSelectedNote(field, value) {
         setNotes((currentNotes) =>
             currentNotes.map((note) =>
@@ -119,6 +181,7 @@ function MemoProvider({ children }) {
         selectFolder,
         createNote,
         updateSelectedNote,
+        deleteNote,
     }
 
     return (

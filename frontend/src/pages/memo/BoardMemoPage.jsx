@@ -22,6 +22,7 @@ function BoardMemoPage() {
         setBoardEdges,
         selectedFolderId,
         createNote,
+        deleteNote,
     } = useOutletContext()
 
     const [boardOffset, setBoardOffset] = useState({
@@ -99,6 +100,27 @@ function BoardMemoPage() {
 
     const openedNote =
         notes.find((note) => note.id === openedNoteId) ?? null
+
+    function handleDeleteOpenedNote() {
+        if (!openedNote) {
+            return
+        }
+
+        const noteTitle =
+            openedNote.title.trim() || '제목 없음'
+
+        const shouldDelete = window.confirm(
+            `"${noteTitle}" 메모를 삭제할까요?`,
+        )
+
+        if (!shouldDelete) {
+            return
+        }
+
+        deleteNote(openedNote.id)
+        setOpenedNoteId(null)
+        setPendingNodeId(null)
+    }
 
     function handleToolChange(nextMode) {
         setPendingNodeId(null)
@@ -521,8 +543,10 @@ function BoardMemoPage() {
                 <BoardNoteDetail
                     note={openedNote}
                     onClose={() => setOpenedNoteId(null)}
+                    onDelete={handleDeleteOpenedNote}
                 />
             )}
+
         </section>
     )
 }

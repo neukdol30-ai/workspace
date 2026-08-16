@@ -105,22 +105,50 @@
     opacity: 0.75;
 }
 
-.memo-create-button {
+.memo-column-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.memo-create-button,
+.memo-delete-button {
+    display: grid;
     width: 24px;
     height: 24px;
     padding: 0;
+    place-items: center;
     border: 1px solid var(--line);
     color: var(--ink);
     cursor: pointer;
     background: var(--surface);
     font: inherit;
+}
+
+.memo-create-button {
     font-size: 1rem;
 }
 
-.memo-create-button:hover {
+.memo-delete-button {
+    font-size: 1rem;
+}
+
+.memo-create-button:hover,
+.memo-delete-button:not(:disabled):hover {
     color: var(--surface);
     background: var(--ink);
 }
+
+.memo-delete-button:disabled {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.memo-delete-button svg {
+    width: 16px;
+    height: 16px;
+}
+ㅞㅡ 겨ㅜ ㅇㄷㅍ
 
 .memo-editor {
     display: flex;

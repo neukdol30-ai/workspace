@@ -1,6 +1,7 @@
+import { MdDeleteOutline } from 'react-icons/md'
 import './BoardNoteDetail.css'
 
-function BoardNoteDetail({ note, onClose }) {
+function BoardNoteDetail({ note, onClose, onDelete }) {
     return (
         <div
             className="board-note-detail-layer"
@@ -12,14 +13,25 @@ function BoardNoteDetail({ note, onClose }) {
                 <header className="board-note-detail-header">
                     <span>MEMO DETAIL</span>
 
-                    <button
-                        className="board-note-detail-close"
-                        type="button"
-                        aria-label="Close memo"
-                        onClick={onClose}
+                    <div className="board-note-detail-actions">
+                        <button
+                            className="board-note-detail-delete"
+                            type="button"
+                            aria-label="Delete memo"
+                            onClick={onDelete}
                         >
-                        x
-                    </button>
+                            <MdDeleteOutline aria-hidden="true" />
+                        </button>
+
+                        <button
+                            className="board-note-detail-close"
+                            type="button"
+                            aria-label="Close memo"
+                            onClick={onClose}
+                        >
+                            x
+                        </button>
+                    </div>
                 </header>
 
                 <div className="board-note-detail-date">

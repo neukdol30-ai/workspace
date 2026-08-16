@@ -34,19 +34,40 @@
     letter-spacing: 0.08em;
 }
 
+.board-note-detail-actions {
+    display: flex;
+    height: 100%;
+}
+
+.board-note-detail-delete,
 .board-note-detail-close {
+    display: grid;
     width: 40px;
     height: 100%;
     padding: 0;
+    place-items: center;
     border: 0;
     border-left: 1px solid var(--surface);
     color: var(--surface);
     cursor: pointer;
     background: var(--ink);
     font: inherit;
+}
+
+.board-note-detail-delete {
+    font-size: 1rem;
+}
+
+.board-note-detail-delete svg {
+    width: 18px;
+    height: 18px;
+}
+
+.board-note-detail-close {
     font-size: 1.2rem;
 }
 
+.board-note-detail-delete:hover,
 .board-note-detail-close:hover {
     color: var(--ink);
     background: var(--surface);

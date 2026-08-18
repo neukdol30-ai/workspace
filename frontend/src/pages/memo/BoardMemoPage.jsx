@@ -4,6 +4,7 @@ import BoardNoteDetail from './board/BoardNoteDetail.jsx'
 import BoardNoteCard from './board/BoardNoteCard.jsx'
 import BoardEdgeLayer from './board/BoardEdgeLayer.jsx'
 import BoardToolbar from './board/BoardToolbar.jsx'
+import ConfirmDialog from "../../component/common/ConfirmDialog.jsx";
 import './BoardMemoPage.css'
 
 const CARD_CENTER_X = 110
@@ -46,6 +47,7 @@ function BoardMemoPage() {
 
     const [draggingNodeId, setDraggingNodeId] = useState(null)
     const [openedNoteId, setOpenedNoteId] = useState(null)
+    const [notePendingDelete, setNotePendingDelete] = useState(null)
     const [toolMode, setToolMode] = useState('select')
     const [pendingNodeId, setPendingNodeId] = useState(null)
 
@@ -106,18 +108,18 @@ function BoardMemoPage() {
             return
         }
 
-        const noteTitle =
-            openedNote.title.trim() || '제목 없음'
+        setNotePendingDelete(openedNote)
+    }
 
-        const shouldDelete = window.confirm(
-            `"${noteTitle}" 메모를 삭제할까요?`,
-        )
+    function handleConfirmDelete() {
 
-        if (!shouldDelete) {
+        if (!notePendingDelete) {
             return
         }
 
-        deleteNote(openedNote.id)
+        deleteNote(notePendingDelete.id)
+
+        setNotePendingDelete(null)
         setOpenedNoteId(null)
         setPendingNodeId(null)
     }
@@ -466,6 +468,33 @@ function BoardMemoPage() {
         setPendingNodeId(null)
     }
 
+    if (selectedFolderId === 'all') {
+        return (
+            <section
+                className="memo-board"
+                aria-label="Memo board unavailable"
+            >
+                <div className="memo-board-unavailable">
+                    <div
+                        className="memo-board-unavailable-panel"
+                        role="status"
+                    >
+                    <span className="memo-board-unavailable-code">
+                        BOARD / LOCKED
+                    </span>
+
+                        <h2>SELECT A FOLDER</h2>
+
+                        <p>
+                            보드를 사용하려면 실제 폴더를
+                            선택하세요.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        )
+    }
+
     return (
         <section className="memo-board" aria-label="memo board">
             <BoardToolbar
@@ -546,6 +575,20 @@ function BoardMemoPage() {
                     onDelete={handleDeleteOpenedNote}
                 />
             )}
+
+            <ConfirmDialog
+                isOpen={notePendingDelete !== null}
+                title="DELETE MEMO"
+                message={
+                `"${notePendingDelete?.title.trim() ||
+                '제목 없음'}" ` +
+                    '메모를 삭제할까요?'
+                }
+                confirmLabel="DELETE"
+                cancelLabel="CANCEL"
+                onConfirm={handleConfirmDelete}
+                onCancel={() => setNotePendingDelete(null)}
+                />
 
         </section>
     )

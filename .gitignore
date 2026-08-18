@@ -35,3 +35,15 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Node / Vite ###
+node_modules/
+dist/
+
+### Environment ###
+.env
+.env.*
+!.env.example
+
+### OS ###
+.DS_Store

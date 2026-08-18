@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { MdDeleteOutline } from 'react-icons/md'
 import ConfirmDialog from '../../component/common/ConfirmDialog.jsx'
+import formatMemoUpdatedAt from '../../utils/formatMemoUpdatedAt.js'
 import './ListMemoPage.css'
 
 function ListMemoPage() {
@@ -124,7 +125,7 @@ function ListMemoPage() {
                             onClick={() => setSelectedNoteId(note.id)}
                         >
                             <strong>{note.title || '제목 없음'}</strong>
-                            <span>{note.updatedAt}</span>
+                            <span>{formatMemoUpdatedAt(note.updatedAt)}</span>
                             <p>{note.content || '내용 없음'}</p>
                         </button>
                     ))}
@@ -135,7 +136,7 @@ function ListMemoPage() {
                 {selectedNote ? (
                     <>
                         <div className="memo-editor-date">
-                            {selectedNote.updatedAt}
+                            {formatMemoUpdatedAt(selectedNote.updatedAt)}
                         </div>
 
                         <input

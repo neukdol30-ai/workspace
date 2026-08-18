@@ -1,39 +1,57 @@
 export const initialFolders = [
-    { id: 'all', name: 'ALL NOTES' },
-    { id: 'inbox', name: 'INBOX' },
-    { id: 'ideas', name: 'IDEAS' },
-    { id: 'projects', name: 'PROJECTS' },
+    {
+        id: 'all',
+        name: 'ALL NOTES',
+        isVirtual: true,
+    },
+    {
+        id: 1,
+        name: 'INBOX',
+        isSystem: true,
+    },
+    {
+        id: 2,
+        name: 'IDEAS',
+        isSystem: false,
+    },
+    {
+        id: 3,
+        name: 'PROJECTS',
+        isSystem: false,
+    },
 ]
 
 export const initialNotes = [
     {
         id: 1,
-        folderId: 'inbox',
+        folderId: 1,
         title: '새 메모',
         content: '여기에 내용을 입력합니다.',
-        updatedAt: '방금 전',
+        createdAt: '2026-08-18T09:00:00+09:00',
+        updatedAt: '2026-08-18T09:00:00+09:00',
     },
     {
         id: 2,
-        folderId: 'ideas',
+        folderId: 2,
         title: '아이디어',
         content: '',
-        updatedAt: '오늘',
+        createdAt: '2026-08-18T09:10:00+09:00',
+        updatedAt: '2026-08-18T09:10:00+09:00',
     },
 ]
 
 export const initialBoardNodes = [
     {
-        id: 'node-1',
-        noteId: 1,
+        memoId: 1,
         x: 80,
         y: 80,
+        stackOrder: 1,
     },
     {
-        id: 'node-2',
-        noteId: 2,
+        memoId: 2,
         x: 340,
         y: 240,
+        stackOrder: 2,
     },
 ]
 

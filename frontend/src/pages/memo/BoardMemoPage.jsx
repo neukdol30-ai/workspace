@@ -45,15 +45,15 @@ function BoardMemoPage() {
     const boardViewportRef = useRef(null)
     const createCascadeRef = useRef(0)
 
-    const [draggingNodeId, setDraggingNodeId] = useState(null)
+    const [draggingMemoId, setDraggingMemoId] = useState(null)
     const [openedNoteId, setOpenedNoteId] = useState(null)
     const [notePendingDelete, setNotePendingDelete] = useState(null)
     const [toolMode, setToolMode] = useState('select')
-    const [pendingNodeId, setPendingNodeId] = useState(null)
+    const [pendingMemoId, setPendingMemoId] = useState(null)
 
     const cardDragRef = useRef({
         active: false,
-        nodeId: null,
+        memoId: null,
         startX: 0,
         startY: 0,
         startNodeX: 0,
@@ -72,24 +72,30 @@ function BoardMemoPage() {
         visibleNotes.map((note) => note.id),
     )
 
-    const visibleNodes = boardNodes.filter((node) =>
-        visibleNoteIds.has(node.noteId),
+    const visibleNodes = boardNodes
+        .filter((node) =>
+        visibleNoteIds.has(node.memoId),
     )
+        .sort(
+            (firstNode, secondNode) =>
+                firstNode.stackOrder - secondNode.stackOrder,
+        )
 
-    const visibleNodeIds = new Set(
-        visibleNodes.map((node) => node.id),
+    const visibleMemoIds = new Set(
+        visibleNodes.map((node) => node.memoId),
     )
 
     const visibleEdges = boardEdges.filter(
         (edge) =>
-            visibleNodeIds.has(edge.sourceNodeId) &&
-            visibleNodeIds.has(edge.targetNodeId),
+            edge.folderId === selectedFolderId &&
+            visibleMemoIds.has(edge.sourceMemoId) &&
+            visibleMemoIds.has(edge.targetMemoId),
     )
 
-    const connectedNodeIds = new Set(
+    const connectedMemoIds = new Set(
         visibleEdges.flatMap((edge) => [
-            edge.sourceNodeId,
-            edge.targetNodeId,
+            edge.sourceMemoId,
+            edge.targetMemoId,
         ]),
     )
 
@@ -97,7 +103,7 @@ function BoardMemoPage() {
         toolMode === 'link'
             ? visibleNodes
             : visibleNodes.filter((node) =>
-                connectedNodeIds.has(node.id),
+                connectedMemoIds.has(node.memoId),
             )
 
     const openedNote =
@@ -121,11 +127,11 @@ function BoardMemoPage() {
 
         setNotePendingDelete(null)
         setOpenedNoteId(null)
-        setPendingNodeId(null)
+        setPendingMemoId(null)
     }
 
     function handleToolChange(nextMode) {
-        setPendingNodeId(null)
+        setPendingMemoId(null)
 
         setToolMode((currentMode) =>
             currentMode === nextMode ? 'select' : nextMode,
@@ -272,22 +278,33 @@ function BoardMemoPage() {
         setIsBoardDragging(false)
     }
 
-    function bringNodeToFront(nodeId) {
+    function bringNodeToFront(memoId) {
         setBoardNodes((currentNodes) => {
-            const selectedNode = currentNodes.find(
-                (currentNode) => currentNode.id === nodeId,
+            const nodeExists = currentNodes.some(
+                (node) => node.memoId === memoId,
             )
 
-            if (!selectedNode) {
+            if (!nodeExists) {
                 return currentNodes
             }
+            const nextStackOrder =
+                currentNodes.reduce(
+                    (highest, node) =>
+                        Math.max(
+                            highest,
+                            node.stackOrder ?? 0,
+                        ),
+                    0,
+                ) + 1
 
-            return [
-                ...currentNodes.filter(
-                    (currentNode) => currentNode.id !== nodeId,
-                ),
-                selectedNode,
-            ]
+            return currentNodes.map((node) =>
+                node.memoId === memoId
+                ? {
+                    ...node,
+                    stackOrder: nextStackOrder,
+                }
+                : node,
+            )
         })
     }
 
@@ -301,7 +318,7 @@ function BoardMemoPage() {
 
         cardDragRef.current = {
             active: true,
-            nodeId: node.id,
+            memoId: node.memoId,
             startX: event.clientX,
             startY: event.clientY,
             startNodeX: node.x,
@@ -309,13 +326,13 @@ function BoardMemoPage() {
             didMove: false,
         }
 
-        setDraggingNodeId(node.id)
+        setDraggingMemoId(node.memoId)
     }
 
     function handleCardPointerMove(event, node) {
         if(
             !cardDragRef.current.active ||
-            cardDragRef.current.nodeId !== node.id
+            cardDragRef.current.memoId !== node.memoId
         ){
             return
         }
@@ -343,7 +360,7 @@ function BoardMemoPage() {
 
         setBoardNodes((currentNodes) =>
             currentNodes.map((currentNode) =>
-                currentNode.id === node.id
+                currentNode.memoId === node.memoId
                 ? {
                 ...currentNode,
                     x:
@@ -362,7 +379,7 @@ function BoardMemoPage() {
     function handleCardPointerEnd(event, node) {
         if (
             !cardDragRef.current.active ||
-            cardDragRef.current.nodeId !== node.id
+            cardDragRef.current.memoId !== node.memoId
         ) {
             return
         }
@@ -379,48 +396,48 @@ function BoardMemoPage() {
             event.currentTarget.releasePointerCapture(event.pointerId)
         }
 
-        setDraggingNodeId(null)
-        bringNodeToFront(node.id)
+        setDraggingMemoId(null)
+        bringNodeToFront(node.memoId)
 
         if (!shouldOpenNote) {
             return
         }
 
         if (toolMode === 'select') {
-            setOpenedNoteId(node.noteId)
+            setOpenedNoteId(node.memoId)
             return
         }
 
         if (toolMode === 'link') {
-            handleLinkNode(node.id)
+            handleLinkNode(node.memoId)
             return
         }
 
         if (toolMode === 'unlink') {
-            handleUnlinkNode(node.id)
+            handleUnlinkNode(node.memoId)
         }
     }
 
-    function handleLinkNode(nodeId) {
-        if (pendingNodeId === null) {
-            setPendingNodeId(nodeId)
+    function handleLinkNode(memoId) {
+        if (pendingMemoId === null) {
+            setPendingMemoId(memoId)
             return
         }
 
-        if (pendingNodeId === nodeId) {
-            setPendingNodeId(null)
+        if (pendingMemoId === memoId) {
+            setPendingMemoId(null)
             return
         }
 
         setBoardEdges((currentEdges) => {
             const alreadyConnected = currentEdges.some((edge) => {
                 const sameDirection =
-                    edge.sourceNodeId === pendingNodeId &&
-                    edge.targetNodeId === nodeId
+                    edge.sourceMemoId === pendingMemoId &&
+                    edge.targetMemoId === memoId
 
                 const oppositeDirection =
-                    edge.sourceNodeId === nodeId &&
-                    edge.targetNodeId === pendingNodeId
+                    edge.sourceMemoId === memoId &&
+                    edge.targetMemoId === pendingMemoId
 
                 return sameDirection || oppositeDirection
             })
@@ -433,39 +450,41 @@ function BoardMemoPage() {
                 ...currentEdges,
                 {
                     id: `edge-${Date.now()}`,
-                    sourceNodeId: pendingNodeId,
-                    targetNodeId: nodeId,
+                    folderId: selectedFolderId,
+                    sourceMemoId: pendingMemoId,
+                    targetMemoId: memoId,
+                    edgeType: 'RELATED',
                 }
             ]
         })
-        setPendingNodeId(null)
+        setPendingMemoId(null)
     }
 
-    function handleUnlinkNode(nodeId) {
-        if (pendingNodeId === null) {
-            setPendingNodeId(nodeId)
+    function handleUnlinkNode(memoId) {
+        if (pendingMemoId === null) {
+            setPendingMemoId(memoId)
             return
         }
 
-        if (pendingNodeId === nodeId) {
-            setPendingNodeId(null)
+        if (pendingMemoId === memoId) {
+            setPendingMemoId(null)
             return
         }
 
         setBoardEdges((currentEdges) =>
             currentEdges.filter((edge) => {
                 const sameDirection =
-                    edge.sourceNodeId === pendingNodeId &&
-                    edge.targetNodeId === nodeId
+                    edge.sourceMemoId === pendingMemoId &&
+                    edge.targetMemoId === memoId
 
                     const oppositeDirection =
-                        edge.sourceNodeId === nodeId &&
-                        edge.targetNodeId === pendingNodeId
+                        edge.sourceMemoId === memoId &&
+                        edge.targetMemoId === pendingMemoId
 
                 return !sameDirection && !oppositeDirection
             }),
         )
-        setPendingNodeId(null)
+        setPendingMemoId(null)
     }
 
     if (selectedFolderId === 'all') {
@@ -537,14 +556,14 @@ function BoardMemoPage() {
                         boardNodes={boardNodes}
                         visibleEdges={visibleEdges}
                         visiblePinNodes={visiblePinNodes}
-                        pendingNodeId={pendingNodeId}
+                        pendingMemoId={pendingMemoId}
                         cardCenterX={CARD_CENTER_X}
                         cardPinY={CARD_PIN_Y}
                     />
 
                     {visibleNodes.map((node) => {
                         const note = notes.find(
-                            (item) => item.id === node.noteId,
+                            (item) => item.id === node.memoId,
                         )
 
                         if (!note) {
@@ -553,11 +572,11 @@ function BoardMemoPage() {
 
                         return (
                             <BoardNoteCard
-                                key={node.id}
+                                key={node.memoId}
                                 node={node}
                                 note={note}
-                                isDragging={draggingNodeId === node.id}
-                                isLinkPending={pendingNodeId === node.id}
+                                isDragging={draggingMemoId === node.memoId}
+                                isLinkPending={pendingMemoId === node.memoId}
                                 onPointerDown={handleCardPointerDown}
                                 onPointerMove={handleCardPointerMove}
                                 onPointerUp={handleCardPointerEnd}

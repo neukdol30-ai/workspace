@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navigate, useLocation, useNavigate, Route, Routes } from 'react-router-dom'
 import TopBar from './component/layout/TopBar.jsx'
 import HomePage from './pages/HomePage.jsx'
@@ -11,37 +11,34 @@ function App() {
     const location = useLocation()
     const [isMenuPinned, setIsMenuPinned] = useState(true)
     const [isSideMenuOpen, setIsSideMenuOpen] = useState(true)
-    const [sideMenuMode, setSideMenuMode] = useState('global')
+    const [memoSideMenuMode, setMemoSideMenuMode] = useState('local')
 
+    const isMemoRoute =
+        location.pathname.startsWith('/memo')
 
-    useEffect(() => {
-        if (location.pathname.startsWith('/memo')) {
-            setSideMenuMode('local')
-            return
-        }
-
-        setSideMenuMode('global')
-    }, [location.pathname])
+    const sideMenuMode =
+        isMemoRoute
+            ? memoSideMenuMode
+            : 'global'
 
     const shouldHideMemoFolders =
-        location.pathname.startsWith('/memo') &&
+        isMemoRoute &&
         isSideMenuOpen &&
         sideMenuMode === 'local'
 
     const shouldMoveContent =
-        isMenuPinned && location.pathname.startsWith('/memo')
+        isMenuPinned && isMemoRoute
 
     return (
         <main className="workspace">
             <TopBar
                 onHome={() => {
-                    setSideMenuMode('global')
                     navigate('/')
                 }}
                 isMenuPinned={isMenuPinned}
                 onMenuPinnedChange={setIsMenuPinned}
                 sideMenuMode={sideMenuMode}
-                onSideMenuModeChange={setSideMenuMode}
+                onSideMenuModeChange={setMemoSideMenuMode}
                 onMenuOpenChange={setIsSideMenuOpen}
             />
 

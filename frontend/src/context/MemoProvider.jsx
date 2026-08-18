@@ -8,7 +8,7 @@ import {
 import MemoContext from "./MemoContext.js"
 
 function MemoProvider({ children }) {
-    const [folders] = useState(initialFolders)
+    const [folders, setFolders] = useState(initialFolders)
     const [notes, setNotes] = useState(initialNotes)
 
     const [selectedFolderId, setSelectedFolderId] =
@@ -46,17 +46,30 @@ function MemoProvider({ children }) {
             Number.isFinite(requestedBoardPosition?.x) &&
             Number.isFinite(requestedBoardPosition?.y)
 
-        const folderId =
+        const targetFolder =
             selectedFolderId === 'all'
-        ? 'inbox'
-                : selectedFolderId
+                ? folders.find(
+                    (folder) => folder.isSystem,
+                )
+                : folders.find(
+                    (folder) =>
+                        folder.id === selectedFolderId,
+                )
+
+        if (!targetFolder || targetFolder.isVirtual) {
+            return
+        }
+
+        const folderId = targetFolder.id
+        const now = new Date().toISOString()
 
         const newNote = {
             id: Date.now(),
             folderId,
             title: '새 메모',
             content: '',
-            updatedAt: '방금 전',
+            createdAt: now,
+            updatedAt: now,
         }
 
         setNotes((currentNotes) => [
@@ -73,11 +86,17 @@ function MemoProvider({ children }) {
             const fallbackY =
                 80 + Math.floor(index / 4) * 200
 
+            const nextStackOrder =
+                currentNodes.reduce(
+                    (highest, node) =>
+                        Math.max(highest, node.stackOrder ?? 0),
+                    0,
+                ) + 1
+
             return [
                 ...currentNodes,
                 {
-                    id: `node-${newNote.id}`,
-                    noteId: newNote.id,
+                    memoId: newNote.id,
 
                     x: hasRequestedBoardPosition
                         ? requestedBoardPosition.x
@@ -86,6 +105,8 @@ function MemoProvider({ children }) {
                     y: hasRequestedBoardPosition
                         ? requestedBoardPosition.y
                         : fallbackY,
+
+                    stackOrder: nextStackOrder,
                 },
             ]
         })
@@ -117,25 +138,19 @@ function MemoProvider({ children }) {
                         note.folderId === selectedFolderId,
                 )
 
-        const deletedNodeIds = new Set(
-            boardNodes
-                .filter((node) => node.noteId === noteId)
-                .map((node) => node.id),
-        )
-
         setNotes(remainingNotes)
 
         setBoardNodes((currentNodes) =>
             currentNodes.filter(
-                (node) => node.noteId !== noteId,
+                (node) => node.memoId !== noteId,
             ),
         )
 
         setBoardEdges((currentEdges) =>
             currentEdges.filter(
                 (edge) =>
-                    !deletedNodeIds.has(edge.sourceNodeId) &&
-                    !deletedNodeIds.has(edge.targetNodeId),
+                    edge.sourceMemoId !== noteId &&
+                    edge.targetMemoId !== noteId,
             ),
         )
 
@@ -160,7 +175,7 @@ function MemoProvider({ children }) {
                     ? {
                         ...note,
                         [field]: value,
-                        updatedAt: '방금 전',
+                        updatedAt: new Date().toISOString(),
                     }
                     : note,
             ),
@@ -169,6 +184,7 @@ function MemoProvider({ children }) {
 
     const value = {
         folders,
+        setFolders,
         notes,
         boardNodes,
         setBoardNodes,

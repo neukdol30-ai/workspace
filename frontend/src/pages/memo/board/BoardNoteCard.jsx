@@ -1,4 +1,5 @@
 import './BoardNoteCard.css'
+import formatMemoUpdatedAt from '../../../utils/formatMemoUpdatedAt.js'
 
 function BoardNoteCard({
                            node,
@@ -43,7 +44,7 @@ function BoardNoteCard({
                     {note.title || '제목 없음'}
                 </strong>
 
-                <span>{note.updatedAt}</span>
+                <span>{formatMemoUpdatedAt(note.updatedAt)}</span>
             </div>
 
             <p className="memo-board-card-content">

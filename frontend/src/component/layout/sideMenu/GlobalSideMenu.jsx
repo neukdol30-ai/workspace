@@ -43,6 +43,11 @@ function GlobalSideMenu({ supportsLocalMenu, onOpenLocalMenu }) {
                                 }
                                 end={menu.end}
                                 to={menu.path}
+                                onClick={
+                                menu.id === 'memo'
+                                    ?onOpenLocalMenu
+                                    : undefined
+                                }
                             >
                                 <Icon
                                     className="side-menu-item-icon"

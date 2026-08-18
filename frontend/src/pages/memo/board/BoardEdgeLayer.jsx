@@ -4,12 +4,12 @@ function BoardEdgeLayer({
                             boardNodes,
                             visibleEdges,
                             visiblePinNodes,
-                            pendingNodeId,
+                            pendingMemoId,
                             cardCenterX,
                             cardPinY,
                         }) {
     const boardNodesById = new Map(
-        boardNodes.map((node) => [node.id, node]),
+        boardNodes.map((node) => [node.memoId, node]),
     )
 
     return (
@@ -19,11 +19,11 @@ function BoardEdgeLayer({
         >
             {visibleEdges.map((edge) => {
                 const sourceNode = boardNodesById.get(
-                    edge.sourceNodeId,
+                    edge.sourceMemoId,
                 )
 
                 const targetNode = boardNodesById.get(
-                    edge.targetNodeId,
+                    edge.targetMemoId,
                 )
 
                 if (!sourceNode || !targetNode) {
@@ -44,11 +44,11 @@ function BoardEdgeLayer({
             {visiblePinNodes.map((node) => (
                 <circle
                     className={`memo-board-pin ${
-                        pendingNodeId === node.id
+                        pendingMemoId === node.memoId
                             ? 'memo-board-pin--pending'
                             : ''
                     }`}
-                    key={`pin-${node.id}`}
+                    key={`pin-${node.memoId}`}
                     cx={node.x + cardCenterX}
                     cy={node.y + cardPinY}
                     r="6"

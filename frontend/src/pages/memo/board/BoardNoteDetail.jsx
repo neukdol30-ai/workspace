@@ -1,4 +1,5 @@
 import { MdDeleteOutline } from 'react-icons/md'
+import formatMemoUpdatedAt from '../../../utils/formatMemoUpdatedAt.js'
 import './BoardNoteDetail.css'
 
 function BoardNoteDetail({ note, onClose, onDelete }) {
@@ -35,7 +36,7 @@ function BoardNoteDetail({ note, onClose, onDelete }) {
                 </header>
 
                 <div className="board-note-detail-date">
-                    {note.updatedAt}
+                    {formatMemoUpdatedAt(note.updatedAt)}
                 </div>
 
                 <h2 className="board-note-detail-title">

@@ -42,6 +42,7 @@ function MemoLayout({ hideFolderList }) {
                 </div>
 
                 <Outlet
+                    key={memoContext.selectedFolderId}
                     context={{
                         ...memoContext,
                         hideFolderList,

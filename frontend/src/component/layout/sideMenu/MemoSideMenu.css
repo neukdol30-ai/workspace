@@ -102,3 +102,40 @@
 .memo-side-folder-count {
     font-variant-numeric: tabular-nums;
 }
+
+.memo-side-heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.memo-side-create-button,
+.memo-side-delete-button {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid var(--surface);
+    color: var(--surface);
+    cursor: pointer;
+    place-items: center;
+    background: transparent;
+    font: inherit;
+    line-height: 1;
+}
+
+.memo-side-create-button:hover,
+.memo-side-delete-button:not(:disabled):hover {
+    color: var(--ink);
+    background: var(--surface);
+}
+
+.memo-side-delete-button:disabled {
+    cursor: default;
+    opacity: 0.35;
+}
+
+.memo-side-delete-button svg {
+    width: 14px;
+    height: 14px;
+}

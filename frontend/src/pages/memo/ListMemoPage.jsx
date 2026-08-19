@@ -10,6 +10,9 @@ function ListMemoPage() {
     const [notePendingDelete, setNotePendingDelete] =
         useState(null)
 
+    const [folderPendingDelete, setFolderPendingDelete] =
+        useState(null)
+
     const {
         folders,
         notes,
@@ -18,7 +21,9 @@ function ListMemoPage() {
         selectedNote,
         setSelectedNoteId,
         selectFolder,
+        createFolder,
         createNote,
+        deleteFolder,
         updateSelectedNote,
         deleteNote,
         hideFolderList,
@@ -29,12 +34,61 @@ function ListMemoPage() {
             ? notes
             : notes.filter((note) => note.folderId === selectedFolderId)
 
+    const selectedFolder =
+        folders.find(
+            (folder) => folder.id === selectedFolderId,
+        ) ?? null
+
+    const canDeleteSelectedFolder =
+        selectedFolder !== null &&
+        !selectedFolder.isVirtual &&
+        !selectedFolder.system
+
     function handleDeleteSelectedNote() {
         if (!selectedNote) {
             return
         }
 
         setNotePendingDelete(selectedNote)
+    }
+
+    async function handleCreateFolder() {
+        const folderName = window.prompt(
+            '새 폴더 이름을 입력하세요.',
+        )
+
+        if (folderName === null) {
+            return
+        }
+
+        try {
+            await createFolder(folderName)
+        } catch (error) {
+            console.error(error)
+            window.alert('폴더 생성에 실패했습니다.')
+        }
+    }
+
+    function handleDeleteSelectedFolder() {
+        if (!canDeleteSelectedFolder) {
+            return
+        }
+
+        setFolderPendingDelete(selectedFolder)
+    }
+
+    async function handleConfirmFolderDelete() {
+        if (!folderPendingDelete) {
+            return
+        }
+
+        try {
+            await deleteFolder(folderPendingDelete.id)
+            setFolderPendingDelete(null)
+        } catch (error) {
+            console.error(error)
+            window.alert('폴더 삭제에 실패했습니다.')
+        }
     }
 
     function handleConfirmDelete() {
@@ -56,7 +110,30 @@ function ListMemoPage() {
                 className="memo-folders"
                 hidden={hideFolderList}
             >
-                <div className="memo-column-heading">FOLDERS</div>
+                <div className="memo-column-heading">
+                    <span>FOLDERS</span>
+
+                    <div className="memo-column-actions">
+                        <button
+                            className="memo-delete-button"
+                            type="button"
+                            aria-label="Delete selected folder"
+                            disabled={!canDeleteSelectedFolder}
+                            onClick={handleDeleteSelectedFolder}
+                        >
+                            <MdDeleteOutline aria-hidden="true" />
+                        </button>
+
+                        <button
+                            className="memo-create-button"
+                            type="button"
+                            aria-label="Create folder"
+                            onClick={handleCreateFolder}
+                        >
+                            +
+                        </button>
+                    </div>
+                </div>
 
                 <div className="memo-folder-list">
                     {folders.map((folder) => {
@@ -175,6 +252,19 @@ function ListMemoPage() {
                 onConfirm={handleConfirmDelete}
                 onCancel={() => setNotePendingDelete(null)}
             />
+            <ConfirmDialog
+                isOpen={folderPendingDelete !== null}
+                title="DELETE FOLDER"
+                message={
+                    `"${folderPendingDelete?.name?.trim() || '이름 없음'}" ` +
+                    '폴더와 내부 메모를 삭제할까요?'
+                }
+                confirmLabel="DELETE"
+                cancelLabel="CANCEL"
+                onConfirm={handleConfirmFolderDelete}
+                onCancel={() => setFolderPendingDelete(null)}
+            />
+
         </div>
     )
 }

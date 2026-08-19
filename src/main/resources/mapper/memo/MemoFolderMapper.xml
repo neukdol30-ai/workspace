@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kousei.workspace.memo.folder.MemoFolderMapper">
+
+    <resultMap
+            id="memoFolderResultMap"
+            type="com.kousei.workspace.memo.folder.MemoFolder"
+    >
+        <id
+                column="FOLDER_ID"
+                property="folderId"
+        />
+
+        <result
+                column="USER_ID"
+                property="userId"
+        />
+
+        <result
+                column="FOLDER_NAME"
+                property="folderName"
+        />
+
+        <result
+                column="IS_SYSTEM"
+                property="systemFlag"
+        />
+
+        <result
+                column="CREATED_AT"
+                property="createdAt"
+        />
+    </resultMap>
+
+    <select
+            id="findAllByUserId"
+            resultMap="memoFolderResultMap"
+    >
+        SELECT
+        FOLDER_ID,
+        USER_ID,
+        FOLDER_NAME,
+        IS_SYSTEM,
+        CREATED_AT
+        FROM MEMO_FOLDER
+        WHERE USER_ID = #{userId}
+        ORDER BY
+        IS_SYSTEM DESC,
+        FOLDER_ID ASC
+    </select>
+
+    <insert
+            id="insert"
+            parameterType="com.kousei.workspace.memo.folder.MemoFolder"
+            useGeneratedKeys="true"
+            keyProperty="folderId"
+            keyColumn="FOLDER_ID"
+    >
+        INSERT INTO MEMO_FOLDER (
+        USER_ID,
+        FOLDER_NAME,
+        IS_SYSTEM
+        )
+        VALUES (
+        #{userId},
+        #{folderName},
+        #{systemFlag}
+        )
+    </insert>
+
+    <select
+            id="findByIdAndUserId"
+            resultMap="memoFolderResultMap"
+    >
+        SELECT
+        FOLDER_ID,
+        USER_ID,
+        FOLDER_NAME,
+        IS_SYSTEM,
+        CREATED_AT
+        FROM MEMO_FOLDER
+        WHERE FOLDER_ID = #{folderId}
+        AND USER_ID = #{userId}
+    </select>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM MEMO_FOLDER
+        WHERE FOLDER_ID = #{folderId}
+        AND USER_ID = #{userId}
+    </delete>
+
+</mapper>

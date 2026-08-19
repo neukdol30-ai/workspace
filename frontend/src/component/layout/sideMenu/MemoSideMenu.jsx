@@ -1,4 +1,4 @@
-import { MdChevronLeft } from 'react-icons/md'
+import {MdChevronLeft, MdDeleteOutline } from 'react-icons/md'
 import { useMemoContext } from '../../../context/MemoContext.js'
 import './MemoSideMenu.css'
 
@@ -8,7 +8,57 @@ function MemoSideMenu({ onReturnGlobal }) {
         notes,
         selectedFolderId,
         selectFolder,
+        createFolder,
+        deleteFolder,
     } = useMemoContext()
+
+    const selectedFolder =
+        folders.find(
+            (folder) => folder.id === selectedFolderId,
+        ) ?? null
+
+    const canDeleteSelectedFolder =
+        selectedFolder !== null &&
+        !selectedFolder.isVirtual &&
+        !selectedFolder.system
+
+    async function handleCreateFolder() {
+        const folderName = window.prompt(
+            '새 폴더 이름을 입력하세요.',
+        )
+
+        if (folderName === null) {
+            return
+        }
+
+        try {
+            await createFolder(folderName)
+        } catch (error) {
+            console.error(error)
+            window.alert('폴더 생성에 실패했습니다.')
+        }
+    }
+
+    async function handleDeleteSelectedFolder() {
+        if (!canDeleteSelectedFolder) {
+            return
+        }
+
+        const confirmed = window.confirm(
+            `"${selectedFolder.name}" 폴더와 내부 메모를 삭제할까요?`,
+        )
+
+        if (!confirmed) {
+            return
+        }
+
+        try {
+            await deleteFolder(selectedFolder.id)
+        } catch (error) {
+            console.error(error)
+            window.alert('폴더 삭제에 실패했습니다.')
+        }
+    }
 
     return (
         <section
@@ -29,9 +79,30 @@ function MemoSideMenu({ onReturnGlobal }) {
                 <div className="side-menu-heading">
                     <span>FOLDERS</span>
 
-                    <span>
-                        {String(folders.length).padStart(2, '0')}
-                    </span>
+                    <div className="memo-side-heading-actions">
+                        <span>
+                            {String(folders.length).padStart(2, '0')}
+                        </span>
+
+                        <button
+                            className="memo-side-delete-button"
+                            type="button"
+                            aria-label="Delete selected folder"
+                            disabled={!canDeleteSelectedFolder}
+                            onClick={handleDeleteSelectedFolder}
+                        >
+                            <MdDeleteOutline aria-hidden="true" />
+                        </button>
+
+                        <button
+                            className="memo-side-create-button"
+                            type="button"
+                            aria-label="Create folder"
+                            onClick={handleCreateFolder}
+                        >
+                            +
+                        </button>
+                    </div>
                 </div>
 
                 <div className="memo-side-folder-list">

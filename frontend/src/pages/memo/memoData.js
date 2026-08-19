@@ -7,17 +7,17 @@ export const initialFolders = [
     {
         id: 1,
         name: 'INBOX',
-        isSystem: true,
+        system: true,
     },
     {
         id: 2,
         name: 'IDEAS',
-        isSystem: false,
+        system: false,
     },
     {
         id: 3,
         name: 'PROJECTS',
-        isSystem: false,
+        system: false,
     },
 ]
 

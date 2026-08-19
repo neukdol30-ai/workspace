@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
     initialFolders,
     initialNotes,
@@ -9,6 +9,39 @@ import MemoContext from "./MemoContext.js"
 
 function MemoProvider({ children }) {
     const [folders, setFolders] = useState(initialFolders)
+
+    useEffect(() => {
+        async function loadFolders() {
+            try {
+                const response = await fetch(
+                    '/api/folders?userId=1',
+                )
+
+                if (!response.ok) {
+                    throw new Error(
+                        `폴더 조회 실패: ${response.status}`,
+                    )
+                }
+
+                const databaseFolders =
+                    await response.json()
+
+                setFolders([
+                    {
+                        id: 'all',
+                        name: 'ALL NOTES',
+                        isVirtual: true,
+                    },
+                    ...databaseFolders,
+                ])
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        loadFolders()
+    }, [])
+
     const [notes, setNotes] = useState(initialNotes)
 
     const [selectedFolderId, setSelectedFolderId] =
@@ -39,6 +72,43 @@ function MemoProvider({ children }) {
         setSelectedNoteId(nextVisibleNotes[0]?.id ?? null)
     }
 
+    async function createFolder(name) {
+        const trimmedName = name.trim()
+
+        if (!trimmedName) {
+            return
+        }
+
+        const response = await fetch(
+            '/api/folders?userId=1',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: trimmedName,
+                }),
+            },
+        )
+
+        if (!response.ok) {
+            throw new Error(
+                `폴더 생성 실패: ${response.status}`,
+            )
+        }
+
+        const createdFolder = await response.json()
+
+        setFolders((currentFolders) => [
+            ...currentFolders,
+            createdFolder,
+        ])
+
+        setSelectedFolderId(createdFolder.id)
+        setSelectedNoteId(null)
+    }
+
     function createNote(options = {}) {
         const requestedBoardPosition = options?.boardPosition
 
@@ -49,7 +119,7 @@ function MemoProvider({ children }) {
         const targetFolder =
             selectedFolderId === 'all'
                 ? folders.find(
-                    (folder) => folder.isSystem,
+                    (folder) => folder.system,
                 )
                 : folders.find(
                     (folder) =>
@@ -110,6 +180,58 @@ function MemoProvider({ children }) {
                 },
             ]
         })
+    }
+
+    async function deleteFolder(folderId) {
+        const response = await fetch(
+            `/api/folders/${folderId}?userId=1`,
+            {
+                method: 'DELETE',
+            },
+        )
+
+        if (!response.ok) {
+            throw new Error(
+                `폴더 삭제 실패: ${response.status}`,
+            )
+        }
+
+        const deletedNoteIds = new Set(
+            notes
+                .filter((note) => note.folderId === folderId)
+                .map((note) => note.id),
+        )
+
+        const remainingNotes = notes.filter(
+            (note) => note.folderId !== folderId,
+        )
+
+        setFolders((currentFolders) =>
+            currentFolders.filter(
+                (folder) => folder.id !== folderId,
+            ),
+        )
+
+        setNotes(remainingNotes)
+
+        setBoardNodes((currentNodes) =>
+            currentNodes.filter(
+                (node) => !deletedNoteIds.has(node.memoId),
+            ),
+        )
+
+        setBoardEdges((currentEdges) =>
+            currentEdges.filter(
+                (edge) => edge.folderId !== folderId,
+            ),
+        )
+
+        if (selectedFolderId === folderId) {
+            setSelectedFolderId('all')
+            setSelectedNoteId(
+                remainingNotes[0]?.id ?? null,
+            )
+        }
     }
 
     function deleteNote(noteId) {
@@ -195,6 +317,8 @@ function MemoProvider({ children }) {
         selectedNote,
         setSelectedNoteId,
         selectFolder,
+        createFolder,
+        deleteFolder,
         createNote,
         updateSelectedNote,
         deleteNote,

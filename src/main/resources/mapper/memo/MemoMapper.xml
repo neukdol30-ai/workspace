@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kousei.workspace.memo.note.MemoMapper">
+
+    <resultMap
+            id="memoResultMap"
+            type="com.kousei.workspace.memo.note.Memo"
+    >
+        <id
+                column="MEMO_ID"
+                property="memoId"
+        />
+
+        <result
+                column="FOLDER_ID"
+                property="folderId"
+        />
+
+        <result
+                column="TITLE"
+                property="title"
+        />
+
+        <result
+                column="CONTENT"
+                property="content"
+        />
+
+        <result
+                column="CREATED_AT"
+                property="createdAt"
+        />
+
+        <result
+                column="UPDATED_AT"
+                property="updatedAt"
+        />
+    </resultMap>
+
+    <select
+            id="findAllByUserId"
+            resultMap="memoResultMap"
+    >
+        SELECT
+        M.MEMO_ID,
+        M.FOLDER_ID,
+        M.TITLE,
+        M.CONTENT,
+        M.CREATED_AT,
+        M.UPDATED_AT
+        FROM MEMO M
+        INNER JOIN MEMO_FOLDER F
+        ON F.FOLDER_ID = M.FOLDER_ID
+        WHERE F.USER_ID = #{userId}
+        ORDER BY
+        M.UPDATED_AT DESC,
+        M.MEMO_ID DESC
+    </select>
+
+    <select
+            id="findByIdAndUserId"
+            resultMap="memoResultMap"
+    >
+        SELECT
+        M.MEMO_ID,
+        M.FOLDER_ID,
+        M.TITLE,
+        M.CONTENT,
+        M.CREATED_AT,
+        M.UPDATED_AT
+        FROM MEMO M
+        INNER JOIN MEMO_FOLDER F
+        ON F.FOLDER_ID = M.FOLDER_ID
+        WHERE M.MEMO_ID = #{memoId}
+        AND F.USER_ID = #{userId}
+    </select>
+
+    <insert
+            id="insert"
+            parameterType="com.kousei.workspace.memo.note.Memo"
+            useGeneratedKeys="true"
+            keyProperty="memoId"
+            keyColumn="MEMO_ID"
+    >
+        INSERT INTO MEMO (
+        FOLDER_ID,
+        TITLE,
+        CONTENT
+        )
+        VALUES (
+        #{folderId},
+        #{title, jdbcType=VARCHAR},
+        #{content, jdbcType=CLOB}
+        )
+    </insert>
+
+    <update id="updateByIdAndUserId">
+        UPDATE MEMO
+        SET
+        TITLE = #{memo.title, jdbcType=VARCHAR},
+        CONTENT = #{memo.content, jdbcType=CLOB},
+        UPDATED_AT = SYSTIMESTAMP
+        WHERE MEMO_ID = #{memo.memoId}
+        AND FOLDER_ID IN (
+        SELECT FOLDER_ID
+        FROM MEMO_FOLDER
+        WHERE USER_ID = #{userId}
+        )
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM MEMO
+        WHERE MEMO_ID = #{memoId}
+        AND FOLDER_ID IN (
+        SELECT FOLDER_ID
+        FROM MEMO_FOLDER
+        WHERE USER_ID = #{userId}
+        )
+    </delete>
+
+</mapper>

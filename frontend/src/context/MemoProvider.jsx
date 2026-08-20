@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react"
+import {useEffect, useRef, useState, } from 'react'
 import {
     initialFolders,
-    initialNotes,
     initialBoardNodes,
     initialBoardEdges,
 } from "../pages/memo/memoData.js"
@@ -42,14 +41,15 @@ function MemoProvider({ children }) {
         loadFolders()
     }, [])
 
-    const [notes, setNotes] = useState(initialNotes)
+    const [notes, setNotes] = useState([])
+
+    const memoSaveTimersRef = useRef(new Map())
 
     const [selectedFolderId, setSelectedFolderId] =
     useState('all')
 
-    const [selectedNoteId, setSelectedNoteId] = useState(
-        initialNotes[0]?.id ?? null,
-    )
+    const [selectedNoteId, setSelectedNoteId] =
+        useState(null)
 
     const [boardNodes, setBoardNodes] =
     useState(initialBoardNodes)
@@ -109,8 +109,48 @@ function MemoProvider({ children }) {
         setSelectedNoteId(null)
     }
 
-    function createNote(options = {}) {
-        const requestedBoardPosition = options?.boardPosition
+    useEffect(() => {
+        async function loadMemos() {
+            try {
+                const response = await fetch(
+                    '/api/memos?userId=1',
+                )
+
+                if (!response.ok) {
+                    throw new Error(
+                        `메모 조회 실패: ${response.status}`,
+                    )
+                }
+
+                const databaseMemos =
+                    await response.json()
+
+                setNotes(databaseMemos)
+
+                setSelectedNoteId(
+                    databaseMemos[0]?.id ?? null,
+                )
+            } catch (error) {
+                console.error(error)
+            }
+        }
+
+        loadMemos()
+    }, [])
+
+    useEffect(() => {
+        return () => {
+            memoSaveTimersRef.current.forEach(
+                (timerId) => clearTimeout(timerId),
+            )
+
+            memoSaveTimersRef.current.clear()
+        }
+    }, [])
+
+    async function createNote(options = {}) {
+        const requestedBoardPosition =
+            options?.boardPosition
 
         const hasRequestedBoardPosition =
             Number.isFinite(requestedBoardPosition?.x) &&
@@ -127,59 +167,84 @@ function MemoProvider({ children }) {
                 )
 
         if (!targetFolder || targetFolder.isVirtual) {
-            return
+            return null
         }
 
-        const folderId = targetFolder.id
-        const now = new Date().toISOString()
-
-        const newNote = {
-            id: Date.now(),
-            folderId,
-            title: '새 메모',
-            content: '',
-            createdAt: now,
-            updatedAt: now,
-        }
-
-        setNotes((currentNotes) => [
-            newNote,
-            ...currentNotes,
-        ])
-
-        setSelectedNoteId(newNote.id)
-
-        setBoardNodes((currentNodes) => {
-            const index = currentNodes.length
-
-            const fallbackX = 80 + (index % 4) * 260
-            const fallbackY =
-                80 + Math.floor(index / 4) * 200
-
-            const nextStackOrder =
-                currentNodes.reduce(
-                    (highest, node) =>
-                        Math.max(highest, node.stackOrder ?? 0),
-                    0,
-                ) + 1
-
-            return [
-                ...currentNodes,
+        try {
+            const response = await fetch(
+                '/api/memos?userId=1',
                 {
-                    memoId: newNote.id,
-
-                    x: hasRequestedBoardPosition
-                        ? requestedBoardPosition.x
-                        : fallbackX,
-
-                    y: hasRequestedBoardPosition
-                        ? requestedBoardPosition.y
-                        : fallbackY,
-
-                    stackOrder: nextStackOrder,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        folderId: targetFolder.id,
+                        title: '새 메모',
+                        content: '',
+                    }),
                 },
-            ]
-        })
+            )
+
+            if (!response.ok) {
+                throw new Error(
+                    `메모 생성 실패: ${response.status}`,
+                )
+            }
+
+            const createdNote = await response.json()
+
+            setNotes((currentNotes) => [
+                createdNote,
+                ...currentNotes,
+            ])
+
+            setSelectedNoteId(createdNote.id)
+
+            setBoardNodes((currentNodes) => {
+                const index = currentNodes.length
+
+                const fallbackX =
+                    80 + (index % 4) * 260
+
+                const fallbackY =
+                    80 +
+                    Math.floor(index / 4) * 200
+
+                const nextStackOrder =
+                    currentNodes.reduce(
+                        (highest, node) =>
+                            Math.max(
+                                highest,
+                                node.stackOrder ?? 0,
+                            ),
+                        0,
+                    ) + 1
+
+                return [
+                    ...currentNodes,
+                    {
+                        memoId: createdNote.id,
+
+                        x: hasRequestedBoardPosition
+                            ? requestedBoardPosition.x
+                            : fallbackX,
+
+                        y: hasRequestedBoardPosition
+                            ? requestedBoardPosition.y
+                            : fallbackY,
+
+                        stackOrder: nextStackOrder,
+                    },
+                ]
+            })
+
+            return createdNote
+        } catch (error) {
+            console.error(error)
+            window.alert('메모 생성에 실패했습니다.')
+            return null
+        }
     }
 
     async function deleteFolder(folderId) {
@@ -234,7 +299,27 @@ function MemoProvider({ children }) {
         }
     }
 
-    function deleteNote(noteId) {
+    async function deleteNote(noteId) {
+
+        try {
+            const response = await fetch(
+                `/api/memos/${noteId}?userId=1`,
+                {
+                    method: 'DELETE',
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error(
+                    `메모 삭제 실패: ${response.status}`,
+                )
+            }
+        } catch (error) {
+            console.error(error)
+            window.alert('메모 삭제에 실패했습니다.')
+            return false
+        }
+
         const visibleNotesBeforeDeletion =
             selectedFolderId === 'all'
                 ? notes
@@ -277,7 +362,7 @@ function MemoProvider({ children }) {
         )
 
         if (selectedNoteId !== noteId) {
-            return
+            return true
         }
 
         const nextNoteIndex = Math.min(
@@ -288,19 +373,103 @@ function MemoProvider({ children }) {
         setSelectedNoteId(
             remainingVisibleNotes[nextNoteIndex]?.id ?? null,
         )
+
+        return true
     }
 
     function updateSelectedNote(field, value) {
+        if (!selectedNote) {
+            return
+        }
+
+        const memoId = selectedNote.id
+
+        const nextNote = {
+            ...selectedNote,
+            [field]: value,
+            updatedAt: new Date().toISOString(),
+        }
+
         setNotes((currentNotes) =>
             currentNotes.map((note) =>
-                note.id === selectedNoteId
-                    ? {
-                        ...note,
-                        [field]: value,
-                        updatedAt: new Date().toISOString(),
-                    }
+                note.id === memoId
+                    ? nextNote
                     : note,
             ),
+        )
+
+        const previousTimerId =
+            memoSaveTimersRef.current.get(memoId)
+
+        if (previousTimerId) {
+            clearTimeout(previousTimerId)
+        }
+
+        const timerId = setTimeout(
+            async () => {
+                try {
+                    const response = await fetch(
+                        `/api/memos/${memoId}?userId=1`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type':
+                                    'application/json',
+                            },
+                            body: JSON.stringify({
+                                title: nextNote.title,
+                                content: nextNote.content,
+                            }),
+                        },
+                    )
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `메모 수정 실패: ${response.status}`,
+                        )
+                    }
+
+                    const savedNote =
+                        await response.json()
+
+                    setNotes((currentNotes) =>
+                        currentNotes.map((note) => {
+                            if (note.id !== memoId) {
+                                return note
+                            }
+
+                            const hasNewerInput =
+                                note.title !== nextNote.title ||
+                                note.content !== nextNote.content
+
+                            return hasNewerInput
+                                ? note
+                                : savedNote
+                        }),
+                    )
+                } catch (error) {
+                    console.error(error)
+                    window.alert(
+                        '메모 자동 저장에 실패했습니다.',
+                    )
+                } finally {
+                    if (
+                        memoSaveTimersRef.current.get(
+                            memoId,
+                        ) === timerId
+                    ) {
+                        memoSaveTimersRef.current.delete(
+                            memoId,
+                        )
+                    }
+                }
+            },
+            600,
+        )
+
+        memoSaveTimersRef.current.set(
+            memoId,
+            timerId,
         )
     }
 

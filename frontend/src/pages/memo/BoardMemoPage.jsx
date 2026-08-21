@@ -117,13 +117,18 @@ function BoardMemoPage() {
         setNotePendingDelete(openedNote)
     }
 
-    function handleConfirmDelete() {
-
+    async function handleConfirmDelete() {
         if (!notePendingDelete) {
             return
         }
 
-        deleteNote(notePendingDelete.id)
+        const deleted = await deleteNote(
+            notePendingDelete.id,
+        )
+
+        if (!deleted) {
+            return
+        }
 
         setNotePendingDelete(null)
         setOpenedNoteId(null)

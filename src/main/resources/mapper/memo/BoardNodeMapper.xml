@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kousei.workspace.memo.board.BoardNodeMapper">
+
+    <resultMap
+            id="boardNodeResultMap"
+            type="com.kousei.workspace.memo.board.BoardNode"
+    >
+        <id
+                column="MEMO_ID"
+                property="memoId"
+        />
+
+        <result
+                column="POSITION_X"
+                property="positionX"
+        />
+
+        <result
+                column="POSITION_Y"
+                property="positionY"
+        />
+
+        <result
+                column="STACK_ORDER"
+                property="stackOrder"
+        />
+    </resultMap>
+
+    <select
+            id="findAllByUserId"
+            resultMap="boardNodeResultMap"
+    >
+        SELECT
+        N.MEMO_ID,
+        N.POSITION_X,
+        N.POSITION_Y,
+        N.STACK_ORDER
+        FROM BOARD_NODE N
+        INNER JOIN MEMO M
+        ON M.MEMO_ID = N.MEMO_ID
+        INNER JOIN MEMO_FOLDER F
+        ON F.FOLDER_ID = M.FOLDER_ID
+        WHERE F.USER_ID = #{userId}
+        ORDER BY
+        N.STACK_ORDER ASC,
+        N.MEMO_ID ASC
+    </select>
+
+    <select
+            id="findByMemoIdAndUserId"
+            resultMap="boardNodeResultMap"
+    >
+        SELECT
+        N.MEMO_ID,
+        N.POSITION_X,
+        N.POSITION_Y,
+        N.STACK_ORDER
+        FROM BOARD_NODE N
+        INNER JOIN MEMO M
+        ON M.MEMO_ID = N.MEMO_ID
+        INNER JOIN MEMO_FOLDER F
+        ON F.FOLDER_ID = M.FOLDER_ID
+        WHERE N.MEMO_ID = #{memoId}
+        AND F.USER_ID = #{userId}
+    </select>
+
+    <update id="upsertByMemoIdAndUserId">
+        MERGE INTO BOARD_NODE TARGET
+        USING (
+        SELECT M.MEMO_ID
+        FROM MEMO M
+        INNER JOIN MEMO_FOLDER F
+        ON F.FOLDER_ID = M.FOLDER_ID
+        WHERE M.MEMO_ID = #{node.memoId}
+        AND F.USER_ID = #{userId}
+        ) SOURCE
+        ON (
+        TARGET.MEMO_ID = SOURCE.MEMO_ID
+        )
+        WHEN MATCHED THEN
+        UPDATE SET
+        TARGET.POSITION_X =
+        #{node.positionX},
+        TARGET.POSITION_Y =
+        #{node.positionY},
+        TARGET.STACK_ORDER =
+        #{node.stackOrder}
+        WHEN NOT MATCHED THEN
+        INSERT (
+        MEMO_ID,
+        POSITION_X,
+        POSITION_Y,
+        STACK_ORDER
+        )
+        VALUES (
+        SOURCE.MEMO_ID,
+        #{node.positionX},
+        #{node.positionY},
+        #{node.stackOrder}
+        )
+    </update>
+
+</mapper>

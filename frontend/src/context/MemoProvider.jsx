@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState, } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
     initialFolders,
     initialBoardNodes,
@@ -139,14 +139,29 @@ function MemoProvider({ children }) {
     }, [])
 
     useEffect(() => {
+        const memoSaveTimers =
+            memoSaveTimersRef.current
+
         return () => {
-            memoSaveTimersRef.current.forEach(
+            memoSaveTimers.forEach(
                 (timerId) => clearTimeout(timerId),
             )
 
-            memoSaveTimersRef.current.clear()
+            memoSaveTimers.clear()
         }
     }, [])
+
+    function clearMemoSaveTimer(memoId) {
+        const timerId =
+            memoSaveTimersRef.current.get(memoId)
+
+        if (timerId === undefined) {
+            return
+        }
+
+        clearTimeout(timerId)
+        memoSaveTimersRef.current.delete(memoId)
+    }
 
     async function createNote(options = {}) {
         const requestedBoardPosition =
@@ -248,6 +263,18 @@ function MemoProvider({ children }) {
     }
 
     async function deleteFolder(folderId) {
+        const deletedNoteIds = new Set(
+            notes
+                .filter(
+                    (note) => note.folderId === folderId,
+                )
+                .map((note) => note.id),
+        )
+
+        deletedNoteIds.forEach(
+            (memoId) => clearMemoSaveTimer(memoId),
+        )
+
         const response = await fetch(
             `/api/folders/${folderId}?userId=1`,
             {
@@ -260,12 +287,6 @@ function MemoProvider({ children }) {
                 `폴더 삭제 실패: ${response.status}`,
             )
         }
-
-        const deletedNoteIds = new Set(
-            notes
-                .filter((note) => note.folderId === folderId)
-                .map((note) => note.id),
-        )
 
         const remainingNotes = notes.filter(
             (note) => note.folderId !== folderId,
@@ -300,6 +321,7 @@ function MemoProvider({ children }) {
     }
 
     async function deleteNote(noteId) {
+        clearMemoSaveTimer(noteId)
 
         try {
             const response = await fetch(

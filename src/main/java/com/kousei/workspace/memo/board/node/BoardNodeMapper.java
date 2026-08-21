@@ -1,4 +1,4 @@
-package com.kousei.workspace.memo.board;
+package com.kousei.workspace.memo.board.node;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

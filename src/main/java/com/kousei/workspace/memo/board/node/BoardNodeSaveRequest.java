@@ -1,4 +1,4 @@
-package com.kousei.workspace.memo.board;
+package com.kousei.workspace.memo.board.node;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;

@@ -20,10 +20,12 @@ function BoardMemoPage() {
         boardNodes,
         setBoardNodes,
         boardEdges,
-        setBoardEdges,
         selectedFolderId,
         createNote,
         deleteNote,
+        saveBoardNode,
+        createBoardEdge,
+        deleteBoardEdge,
     } = useOutletContext()
 
     const [boardOffset, setBoardOffset] = useState({
@@ -283,43 +285,151 @@ function BoardMemoPage() {
         setIsBoardDragging(false)
     }
 
-    function bringNodeToFront(memoId) {
-        setBoardNodes((currentNodes) => {
-            const nodeExists = currentNodes.some(
+    async function bringNodeToFront(
+        memoId,
+        positionOverride = null,
+    ) {
+        const currentNode =
+            boardNodes.find(
                 (node) => node.memoId === memoId,
             )
 
-            if (!nodeExists) {
-                return currentNodes
-            }
-            const nextStackOrder =
-                currentNodes.reduce(
-                    (highest, node) =>
-                        Math.max(
-                            highest,
-                            node.stackOrder ?? 0,
-                        ),
-                    0,
-                ) + 1
+        if (!currentNode) {
+            return null
+        }
 
-            return currentNodes.map((node) =>
+        const nextStackOrder =
+            boardNodes.reduce(
+                (highest, node) =>
+                    Math.max(
+                        highest,
+                        node.stackOrder ?? 0,
+                    ),
+                0,
+            ) + 1
+
+        const nextNode = {
+            ...currentNode,
+            ...(positionOverride ?? {}),
+            stackOrder: nextStackOrder,
+        }
+
+        setBoardNodes((currentNodes) =>
+            currentNodes.map((node) =>
                 node.memoId === memoId
-                ? {
-                    ...node,
-                    stackOrder: nextStackOrder,
-                }
-                : node,
-            )
-        })
+                    ? nextNode
+                    : node,
+            ),
+        )
+
+        return saveBoardNode(nextNode)
     }
 
-    function handleCardPointerDown(event, node) {
-        if (event.pointerType === 'mouse' && event.button !== 0) {
+    async function handleCardPointerEnd(
+        event,
+        node,
+    ) {
+        if (
+            !cardDragRef.current.active ||
+            cardDragRef.current.memoId !==
+            node.memoId
+        ) {
             return
         }
 
         event.stopPropagation()
-        event.currentTarget.setPointerCapture(event.pointerId)
+
+        const dragState = cardDragRef.current
+
+        const shouldOpenNote =
+            event.type === 'pointerup' &&
+            !dragState.didMove
+
+        const latestNode =
+            boardNodes.find(
+                (currentNode) =>
+                    currentNode.memoId ===
+                    node.memoId,
+            ) ?? node
+
+        let finalPosition = null
+
+        if (dragState.didMove) {
+            if (event.type === 'pointerup') {
+                const screenDistanceX =
+                    event.clientX - dragState.startX
+
+                const screenDistanceY =
+                    event.clientY - dragState.startY
+
+                finalPosition = {
+                    x:
+                        dragState.startNodeX +
+                        screenDistanceX / boardScale,
+
+                    y:
+                        dragState.startNodeY +
+                        screenDistanceY / boardScale,
+                }
+            } else {
+                finalPosition = {
+                    x: latestNode.x,
+                    y: latestNode.y,
+                }
+            }
+        }
+
+        cardDragRef.current.active = false
+
+        if (
+            event.currentTarget.hasPointerCapture(
+                event.pointerId,
+            )
+        ) {
+            event.currentTarget.releasePointerCapture(
+                event.pointerId,
+            )
+        }
+
+        setDraggingMemoId(null)
+
+        await bringNodeToFront(
+            node.memoId,
+            finalPosition,
+        )
+
+        if (!shouldOpenNote) {
+            return
+        }
+
+        if (toolMode === 'select') {
+            setOpenedNoteId(node.memoId)
+            return
+        }
+
+        if (toolMode === 'link') {
+            handleLinkNode(node.memoId)
+            return
+        }
+
+        if (toolMode === 'unlink') {
+            handleUnlinkNode(node.memoId)
+        }
+    }
+
+    function handleCardPointerDown(event, node) {
+        if (
+            event.pointerType === 'mouse' &&
+            event.button !== 0
+        ) {
+            return
+        }
+
+        event.stopPropagation()
+
+        event.currentTarget.setPointerCapture(
+            event.pointerId,
+        )
 
         cardDragRef.current = {
             active: true,
@@ -381,49 +491,7 @@ function BoardMemoPage() {
         )
     }
 
-    function handleCardPointerEnd(event, node) {
-        if (
-            !cardDragRef.current.active ||
-            cardDragRef.current.memoId !== node.memoId
-        ) {
-            return
-        }
-
-        event.stopPropagation()
-
-        const shouldOpenNote =
-            event.type === 'pointerup' &&
-            !cardDragRef.current.didMove
-
-        cardDragRef.current.active = false
-
-        if(event.currentTarget.hasPointerCapture(event.pointerId)) {
-            event.currentTarget.releasePointerCapture(event.pointerId)
-        }
-
-        setDraggingMemoId(null)
-        bringNodeToFront(node.memoId)
-
-        if (!shouldOpenNote) {
-            return
-        }
-
-        if (toolMode === 'select') {
-            setOpenedNoteId(node.memoId)
-            return
-        }
-
-        if (toolMode === 'link') {
-            handleLinkNode(node.memoId)
-            return
-        }
-
-        if (toolMode === 'unlink') {
-            handleUnlinkNode(node.memoId)
-        }
-    }
-
-    function handleLinkNode(memoId) {
+    async function handleLinkNode(memoId) {
         if (pendingMemoId === null) {
             setPendingMemoId(memoId)
             return
@@ -434,38 +502,48 @@ function BoardMemoPage() {
             return
         }
 
-        setBoardEdges((currentEdges) => {
-            const alreadyConnected = currentEdges.some((edge) => {
+        const sourceMemoId = pendingMemoId
+        const targetMemoId = memoId
+
+        const alreadyConnected =
+            boardEdges.some((edge) => {
                 const sameDirection =
-                    edge.sourceMemoId === pendingMemoId &&
-                    edge.targetMemoId === memoId
+                    edge.sourceMemoId ===
+                    sourceMemoId &&
+                    edge.targetMemoId ===
+                    targetMemoId
 
                 const oppositeDirection =
-                    edge.sourceMemoId === memoId &&
-                    edge.targetMemoId === pendingMemoId
+                    edge.sourceMemoId ===
+                    targetMemoId &&
+                    edge.targetMemoId ===
+                    sourceMemoId
 
-                return sameDirection || oppositeDirection
+                return (
+                    edge.folderId ===
+                    selectedFolderId &&
+                    (
+                        sameDirection ||
+                        oppositeDirection
+                    )
+                )
             })
 
-            if (alreadyConnected) {
-                return currentEdges
-            }
-
-            return [
-                ...currentEdges,
-                {
-                    id: `edge-${Date.now()}`,
-                    folderId: selectedFolderId,
-                    sourceMemoId: pendingMemoId,
-                    targetMemoId: memoId,
-                    edgeType: 'RELATED',
-                }
-            ]
-        })
         setPendingMemoId(null)
+
+        if (alreadyConnected) {
+            return
+        }
+
+        await createBoardEdge({
+            folderId: selectedFolderId,
+            sourceMemoId,
+            targetMemoId,
+            edgeType: 'RELATED',
+        })
     }
 
-    function handleUnlinkNode(memoId) {
+    async function handleUnlinkNode(memoId) {
         if (pendingMemoId === null) {
             setPendingMemoId(memoId)
             return
@@ -476,20 +554,40 @@ function BoardMemoPage() {
             return
         }
 
-        setBoardEdges((currentEdges) =>
-            currentEdges.filter((edge) => {
+        const sourceMemoId = pendingMemoId
+        const targetMemoId = memoId
+
+        const edgeToDelete =
+            boardEdges.find((edge) => {
                 const sameDirection =
-                    edge.sourceMemoId === pendingMemoId &&
-                    edge.targetMemoId === memoId
+                    edge.sourceMemoId ===
+                    sourceMemoId &&
+                    edge.targetMemoId ===
+                    targetMemoId
 
-                    const oppositeDirection =
-                        edge.sourceMemoId === memoId &&
-                        edge.targetMemoId === pendingMemoId
+                const oppositeDirection =
+                    edge.sourceMemoId ===
+                    targetMemoId &&
+                    edge.targetMemoId ===
+                    sourceMemoId
 
-                return !sameDirection && !oppositeDirection
-            }),
-        )
+                return (
+                    edge.folderId ===
+                    selectedFolderId &&
+                    (
+                        sameDirection ||
+                        oppositeDirection
+                    )
+                )
+            })
+
         setPendingMemoId(null)
+
+        if (!edgeToDelete) {
+            return
+        }
+
+        await deleteBoardEdge(edgeToDelete.id)
     }
 
     if (selectedFolderId === 'all') {

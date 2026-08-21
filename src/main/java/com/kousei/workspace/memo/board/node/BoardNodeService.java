@@ -1,4 +1,4 @@
-package com.kousei.workspace.memo.board;
+package com.kousei.workspace.memo.board.node;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

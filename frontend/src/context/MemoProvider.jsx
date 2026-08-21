@@ -1,10 +1,32 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-    initialFolders,
-    initialBoardNodes,
-    initialBoardEdges,
-} from "../pages/memo/memoData.js"
+import { initialFolders } from '../pages/memo/memoData.js'
 import MemoContext from "./MemoContext.js"
+
+
+async function saveBoardNodeRequest(node) {
+    const response = await fetch(
+        `/api/board/nodes/${node.memoId}?userId=1`,
+        {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                x: node.x,
+                y: node.y,
+                stackOrder: node.stackOrder,
+            }),
+        },
+    )
+
+    if (!response.ok) {
+        throw new Error(
+            `보드 노드 저장 실패: ${response.status}`,
+        )
+    }
+
+    return response.json()
+}
 
 function MemoProvider({ children }) {
     const [folders, setFolders] = useState(initialFolders)
@@ -52,10 +74,10 @@ function MemoProvider({ children }) {
         useState(null)
 
     const [boardNodes, setBoardNodes] =
-    useState(initialBoardNodes)
+        useState([])
 
     const [boardEdges, setBoardEdges] =
-    useState(initialBoardEdges)
+        useState([])
 
     const selectedNote =
         notes.find((note) => note.id === selectedNoteId) ?? null
@@ -110,32 +132,128 @@ function MemoProvider({ children }) {
     }
 
     useEffect(() => {
-        async function loadMemos() {
+        async function loadMemoWorkspace() {
             try {
-                const response = await fetch(
-                    '/api/memos?userId=1',
-                )
+                const [
+                    memosResponse,
+                    nodesResponse,
+                ] = await Promise.all([
+                    fetch('/api/memos?userId=1'),
+                    fetch('/api/board/nodes?userId=1'),
+                ])
 
-                if (!response.ok) {
+                if (!memosResponse.ok) {
                     throw new Error(
-                        `메모 조회 실패: ${response.status}`,
+                        `메모 조회 실패: ${memosResponse.status}`,
                     )
                 }
 
-                const databaseMemos =
-                    await response.json()
+                if (!nodesResponse.ok) {
+                    throw new Error(
+                        `보드 노드 조회 실패: ${nodesResponse.status}`,
+                    )
+                }
+
+                const [
+                    databaseMemos,
+                    databaseNodes,
+                ] = await Promise.all([
+                    memosResponse.json(),
+                    nodesResponse.json(),
+                ])
+
+                const storedMemoIds = new Set(
+                    databaseNodes.map(
+                        (node) => node.memoId,
+                    ),
+                )
+
+                const highestStackOrder =
+                    databaseNodes.reduce(
+                        (highest, node) =>
+                            Math.max(
+                                highest,
+                                node.stackOrder ?? 0,
+                            ),
+                        0,
+                    )
+
+                const missingNodes = databaseMemos
+                    .filter(
+                        (memo) =>
+                            !storedMemoIds.has(memo.id),
+                    )
+                    .map((memo, index) => {
+                        const placementIndex =
+                            databaseNodes.length + index
+
+                        return {
+                            memoId: memo.id,
+                            x:
+                                80 +
+                                (placementIndex % 4) *
+                                260,
+                            y:
+                                80 +
+                                Math.floor(
+                                    placementIndex / 4,
+                                ) *
+                                200,
+                            stackOrder:
+                                highestStackOrder +
+                                index +
+                                1,
+                        }
+                    })
 
                 setNotes(databaseMemos)
+
+                setBoardNodes([
+                    ...databaseNodes,
+                    ...missingNodes,
+                ])
 
                 setSelectedNoteId(
                     databaseMemos[0]?.id ?? null,
                 )
+
+                let hasNodeSaveFailure = false
+
+                for (const missingNode of missingNodes) {
+                    try {
+                        const savedNode =
+                            await saveBoardNodeRequest(
+                                missingNode,
+                            )
+
+                        setBoardNodes((currentNodes) =>
+                            currentNodes.map((node) =>
+                                node.memoId ===
+                                savedNode.memoId
+                                    ? savedNode
+                                    : node,
+                            ),
+                        )
+                    } catch (error) {
+                        console.error(error)
+                        hasNodeSaveFailure = true
+                    }
+                }
+
+                if (hasNodeSaveFailure) {
+                    window.alert(
+                        '일부 보드 위치 저장에 실패했습니다.',
+                    )
+                }
             } catch (error) {
                 console.error(error)
+                window.alert(
+                    '메모 작업공간을 불러오지 못했습니다.',
+                )
             }
         }
 
-        loadMemos()
+        loadMemoWorkspace()
     }, [])
 
     useEffect(() => {
@@ -151,6 +269,35 @@ function MemoProvider({ children }) {
         }
     }, [])
 
+    useEffect(() => {
+        async function loadBoardEdges() {
+            try {
+                const response = await fetch(
+                    '/api/board/edges?userId=1',
+                )
+
+                if (!response.ok) {
+                    throw new Error(
+                        `연결선 조회 실패: ${response.status}`,
+                    )
+                }
+
+                const databaseEdges =
+                    await response.json()
+
+                setBoardEdges(databaseEdges)
+            } catch (error) {
+                console.error(error)
+
+                window.alert(
+                    '보드 연결선을 불러오지 못했습니다.',
+                )
+            }
+        }
+
+        loadBoardEdges()
+    }, [])
+
     function clearMemoSaveTimer(memoId) {
         const timerId =
             memoSaveTimersRef.current.get(memoId)
@@ -161,6 +308,148 @@ function MemoProvider({ children }) {
 
         clearTimeout(timerId)
         memoSaveTimersRef.current.delete(memoId)
+    }
+
+    async function saveBoardNode(node) {
+        try {
+            const savedNode =
+                await saveBoardNodeRequest(node)
+
+            setBoardNodes((currentNodes) => {
+                const nodeExists = currentNodes.some(
+                    (currentNode) =>
+                        currentNode.memoId ===
+                        savedNode.memoId,
+                )
+
+                if (!nodeExists) {
+                    return [
+                        ...currentNodes,
+                        savedNode,
+                    ]
+                }
+
+                return currentNodes.map(
+                    (currentNode) =>
+                        currentNode.memoId ===
+                        savedNode.memoId
+                            ? savedNode
+                            : currentNode,
+                )
+            })
+
+            return savedNode
+        } catch (error) {
+            console.error(error)
+
+            window.alert(
+                '보드 위치 저장에 실패했습니다.',
+            )
+
+            return null
+        }
+    }
+
+    async function createBoardEdge(edge) {
+        if (!Number.isFinite(edge.folderId)) {
+            window.alert(
+                'ALL NOTES에서는 연결선을 만들 수 없습니다.',
+            )
+
+            return null
+        }
+
+        try {
+            const response = await fetch(
+                '/api/board/edges?userId=1',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        folderId: edge.folderId,
+                        sourceMemoId:
+                        edge.sourceMemoId,
+                        targetMemoId:
+                        edge.targetMemoId,
+                        edgeType:
+                            edge.edgeType ??
+                            'RELATED',
+                    }),
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error(
+                    `연결선 생성 실패: ${response.status}`,
+                )
+            }
+
+            const savedEdge =
+                await response.json()
+
+            setBoardEdges((currentEdges) => {
+                const edgeExists =
+                    currentEdges.some(
+                        (currentEdge) =>
+                            currentEdge.id ===
+                            savedEdge.id,
+                    )
+
+                if (edgeExists) {
+                    return currentEdges
+                }
+
+                return [
+                    ...currentEdges,
+                    savedEdge,
+                ]
+            })
+
+            return savedEdge
+        } catch (error) {
+            console.error(error)
+
+            window.alert(
+                '연결선 생성에 실패했습니다.',
+            )
+
+            return null
+        }
+    }
+
+    async function deleteBoardEdge(edgeId) {
+        try {
+            const response = await fetch(
+                `/api/board/edges/${edgeId}?userId=1`,
+                {
+                    method: 'DELETE',
+                },
+            )
+
+            if (!response.ok) {
+                throw new Error(
+                    `연결선 삭제 실패: ${response.status}`,
+                )
+            }
+
+            setBoardEdges((currentEdges) =>
+                currentEdges.filter(
+                    (edge) => edge.id !== edgeId,
+                ),
+            )
+
+            return true
+        } catch (error) {
+            console.error(error)
+
+            window.alert(
+                '연결선 삭제에 실패했습니다.',
+            )
+
+            return false
+        }
     }
 
     async function createNote(options = {}) {
@@ -216,45 +505,65 @@ function MemoProvider({ children }) {
 
             setSelectedNoteId(createdNote.id)
 
-            setBoardNodes((currentNodes) => {
-                const index = currentNodes.length
+            const nodeIndex = boardNodes.length
 
-                const fallbackX =
-                    80 + (index % 4) * 260
+            const fallbackX =
+                80 + (nodeIndex % 4) * 260
 
-                const fallbackY =
-                    80 +
-                    Math.floor(index / 4) * 200
+            const fallbackY =
+                80 +
+                Math.floor(nodeIndex / 4) * 200
 
-                const nextStackOrder =
-                    currentNodes.reduce(
-                        (highest, node) =>
-                            Math.max(
-                                highest,
-                                node.stackOrder ?? 0,
-                            ),
-                        0,
-                    ) + 1
+            const nextStackOrder =
+                boardNodes.reduce(
+                    (highest, node) =>
+                        Math.max(
+                            highest,
+                            node.stackOrder ?? 0,
+                        ),
+                    0,
+                ) + 1
 
-                return [
-                    ...currentNodes,
-                    {
-                        memoId: createdNote.id,
+            const createdNode = {
+                memoId: createdNote.id,
 
-                        x: hasRequestedBoardPosition
-                            ? requestedBoardPosition.x
-                            : fallbackX,
+                x: hasRequestedBoardPosition
+                    ? requestedBoardPosition.x
+                    : fallbackX,
 
-                        y: hasRequestedBoardPosition
-                            ? requestedBoardPosition.y
-                            : fallbackY,
+                y: hasRequestedBoardPosition
+                    ? requestedBoardPosition.y
+                    : fallbackY,
 
-                        stackOrder: nextStackOrder,
-                    },
-                ]
-            })
+                stackOrder: nextStackOrder,
+            }
+
+            setBoardNodes((currentNodes) => [
+                ...currentNodes,
+                createdNode,
+            ])
+
+            try {
+                const savedNode =
+                    await saveBoardNodeRequest(createdNode)
+
+                setBoardNodes((currentNodes) =>
+                    currentNodes.map((node) =>
+                        node.memoId === savedNode.memoId
+                            ? savedNode
+                            : node,
+                    ),
+                )
+            } catch (nodeError) {
+                console.error(nodeError)
+
+                window.alert(
+                    '메모는 생성됐지만 보드 위치 저장에 실패했습니다.',
+                )
+            }
 
             return createdNote
+
         } catch (error) {
             console.error(error)
             window.alert('메모 생성에 실패했습니다.')
@@ -513,6 +822,9 @@ function MemoProvider({ children }) {
         createNote,
         updateSelectedNote,
         deleteNote,
+        saveBoardNode,
+        createBoardEdge,
+        deleteBoardEdge,
     }
 
     return (

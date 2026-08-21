@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kousei.workspace.memo.board.edge.BoardEdgeMapper">
+
+    <resultMap
+            id="boardEdgeResultMap"
+            type="com.kousei.workspace.memo.board.edge.BoardEdge"
+    >
+        <id
+                column="EDGE_ID"
+                property="edgeId"
+        />
+
+        <result
+                column="FOLDER_ID"
+                property="folderId"
+        />
+
+        <result
+                column="SOURCE_MEMO_ID"
+                property="sourceMemoId"
+        />
+
+        <result
+                column="TARGET_MEMO_ID"
+                property="targetMemoId"
+        />
+
+        <result
+                column="EDGE_TYPE"
+                property="edgeType"
+        />
+
+        <result
+                column="CREATED_AT"
+                property="createdAt"
+        />
+    </resultMap>
+
+    <select
+            id="findAllByUserId"
+            resultMap="boardEdgeResultMap"
+    >
+        SELECT
+            E.EDGE_ID,
+            E.FOLDER_ID,
+            E.SOURCE_MEMO_ID,
+            E.TARGET_MEMO_ID,
+            E.EDGE_TYPE,
+            E.CREATED_AT
+        FROM BOARD_EDGE E
+        INNER JOIN MEMO_FOLDER F
+            ON F.FOLDER_ID = E.FOLDER_ID
+        WHERE F.USER_ID = #{userId}
+        ORDER BY
+            E.CREATED_AT ASC,
+            E.EDGE_ID ASC
+    </select>
+
+    <select
+            id="findByIdAndUserId"
+            resultMap="boardEdgeResultMap"
+    >
+        SELECT
+            E.EDGE_ID,
+            E.FOLDER_ID,
+            E.SOURCE_MEMO_ID,
+            E.TARGET_MEMO_ID,
+            E.EDGE_TYPE,
+            E.CREATED_AT
+        FROM BOARD_EDGE E
+        INNER JOIN MEMO_FOLDER F
+            ON F.FOLDER_ID = E.FOLDER_ID
+        WHERE E.EDGE_ID = #{edgeId}
+          AND F.USER_ID = #{userId}
+    </select>
+
+    <select
+            id="findByMemoPairAndUserId"
+            resultMap="boardEdgeResultMap"
+    >
+        SELECT
+            E.EDGE_ID,
+            E.FOLDER_ID,
+            E.SOURCE_MEMO_ID,
+            E.TARGET_MEMO_ID,
+            E.EDGE_TYPE,
+            E.CREATED_AT
+        FROM BOARD_EDGE E
+        INNER JOIN MEMO_FOLDER F
+            ON F.FOLDER_ID = E.FOLDER_ID
+        WHERE E.FOLDER_ID = #{folderId}
+          AND F.USER_ID = #{userId}
+          AND (
+              (
+                  E.SOURCE_MEMO_ID = #{sourceMemoId}
+                  AND E.TARGET_MEMO_ID = #{targetMemoId}
+              )
+              OR
+              (
+                  E.SOURCE_MEMO_ID = #{targetMemoId}
+                  AND E.TARGET_MEMO_ID = #{sourceMemoId}
+              )
+          )
+    </select>
+
+    <insert
+            id="insert"
+            parameterType="com.kousei.workspace.memo.board.edge.BoardEdge"
+            useGeneratedKeys="true"
+            keyProperty="edgeId"
+            keyColumn="EDGE_ID"
+    >
+        INSERT INTO BOARD_EDGE (
+            FOLDER_ID,
+            SOURCE_MEMO_ID,
+            TARGET_MEMO_ID,
+            EDGE_TYPE
+        )
+        VALUES (
+            #{folderId},
+            #{sourceMemoId},
+            #{targetMemoId},
+            #{edgeType, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM BOARD_EDGE
+        WHERE EDGE_ID = #{edgeId}
+          AND FOLDER_ID IN (
+              SELECT FOLDER_ID
+              FROM MEMO_FOLDER
+              WHERE USER_ID = #{userId}
+          )
+    </delete>
+
+</mapper>

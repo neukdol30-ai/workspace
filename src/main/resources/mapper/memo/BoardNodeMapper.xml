@@ -4,11 +4,11 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.kousei.workspace.memo.board.BoardNodeMapper">
+<mapper namespace="com.kousei.workspace.memo.board.node.BoardNodeMapper">
 
     <resultMap
             id="boardNodeResultMap"
-            type="com.kousei.workspace.memo.board.BoardNode"
+            type="com.kousei.workspace.memo.board.node.BoardNode"
     >
         <id
                 column="MEMO_ID"

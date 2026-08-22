@@ -1,15 +1,17 @@
 package com.kousei.workspace.memo.board.node;
 
+import com.kousei.workspace.auth.JwtUserIdExtractor;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -21,13 +23,16 @@ import java.util.List;
 public class BoardNodeController {
 
     private final BoardNodeService boardNodeService;
+    private final JwtUserIdExtractor jwtUserIdExtractor;
 
     @GetMapping
     public List<BoardNodeResponse> getNodes(
-            @RequestParam
-            @Positive
-            Long userId
+            @AuthenticationPrincipal
+            Jwt jwt
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return boardNodeService.getNodes(userId);
     }
 
@@ -37,14 +42,16 @@ public class BoardNodeController {
             @Positive
             Long memoId,
 
-            @RequestParam
-            @Positive
-            Long userId,
+            @AuthenticationPrincipal
+            Jwt jwt,
 
             @Valid
             @RequestBody
             BoardNodeSaveRequest request
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return boardNodeService.saveNode(
                 userId,
                 memoId,

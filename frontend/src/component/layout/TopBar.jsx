@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
-import { MdHome, MdDensityMedium } from 'react-icons/md'
+import {
+    MdDensityMedium,
+    MdHome,
+    MdLogout,
+} from 'react-icons/md'
 import SideMenu from './sideMenu/SideMenu'
 import './TopBar.css'
 
 function TopBar({
                     onHome,
+                    onLogout,
                     isMenuPinned,
                     onMenuPinnedChange,
                     sideMenuMode,
@@ -96,6 +101,17 @@ function TopBar({
                 <span className="clock-date">{dateText}</span>
                 <span className="clock-time">{timeText}</span>
             </time>
+            <button
+                className="topbar-logout-button"
+                type="button"
+                aria-label="Logout"
+                onClick={onLogout}
+            >
+                <MdLogout
+                    className="topbar-icon"
+                    aria-hidden="true"
+                />
+            </button>
         </header>
     )
 }

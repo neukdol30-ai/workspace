@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { initialFolders } from '../pages/memo/memoData.js'
 import MemoContext from "./MemoContext.js"
+import apiFetch from '../api/apiFetch.js'
 
 
 async function saveBoardNodeRequest(node) {
-    const response = await fetch(
-        `/api/board/nodes/${node.memoId}?userId=1`,
+    const response = await apiFetch(
+        `/api/board/nodes/${node.memoId}`,
         {
             method: 'PUT',
             headers: {
@@ -34,8 +35,8 @@ function MemoProvider({ children }) {
     useEffect(() => {
         async function loadFolders() {
             try {
-                const response = await fetch(
-                    '/api/folders?userId=1',
+                const response = await apiFetch(
+                    '/api/folders',
                 )
 
                 if (!response.ok) {
@@ -101,8 +102,8 @@ function MemoProvider({ children }) {
             return
         }
 
-        const response = await fetch(
-            '/api/folders?userId=1',
+        const response = await apiFetch(
+            '/api/folders',
             {
                 method: 'POST',
                 headers: {
@@ -138,8 +139,8 @@ function MemoProvider({ children }) {
                     memosResponse,
                     nodesResponse,
                 ] = await Promise.all([
-                    fetch('/api/memos?userId=1'),
-                    fetch('/api/board/nodes?userId=1'),
+                    apiFetch('/api/memos'),
+                    apiFetch('/api/board/nodes'),
                 ])
 
                 if (!memosResponse.ok) {
@@ -272,8 +273,8 @@ function MemoProvider({ children }) {
     useEffect(() => {
         async function loadBoardEdges() {
             try {
-                const response = await fetch(
-                    '/api/board/edges?userId=1',
+                const response = await apiFetch(
+                    '/api/board/edges',
                 )
 
                 if (!response.ok) {
@@ -360,8 +361,8 @@ function MemoProvider({ children }) {
         }
 
         try {
-            const response = await fetch(
-                '/api/board/edges?userId=1',
+            const response = await apiFetch(
+                '/api/board/edges',
                 {
                     method: 'POST',
                     headers: {
@@ -421,8 +422,8 @@ function MemoProvider({ children }) {
 
     async function deleteBoardEdge(edgeId) {
         try {
-            const response = await fetch(
-                `/api/board/edges/${edgeId}?userId=1`,
+            const response = await apiFetch(
+                `/api/board/edges/${edgeId}`,
                 {
                     method: 'DELETE',
                 },
@@ -475,8 +476,8 @@ function MemoProvider({ children }) {
         }
 
         try {
-            const response = await fetch(
-                '/api/memos?userId=1',
+            const response = await apiFetch(
+                '/api/memos',
                 {
                     method: 'POST',
                     headers: {
@@ -584,8 +585,8 @@ function MemoProvider({ children }) {
             (memoId) => clearMemoSaveTimer(memoId),
         )
 
-        const response = await fetch(
-            `/api/folders/${folderId}?userId=1`,
+        const response = await apiFetch(
+            `/api/folders/${folderId}`,
             {
                 method: 'DELETE',
             },
@@ -633,8 +634,8 @@ function MemoProvider({ children }) {
         clearMemoSaveTimer(noteId)
 
         try {
-            const response = await fetch(
-                `/api/memos/${noteId}?userId=1`,
+            const response = await apiFetch(
+                `/api/memos/${noteId}`,
                 {
                     method: 'DELETE',
                 },
@@ -739,8 +740,8 @@ function MemoProvider({ children }) {
         const timerId = setTimeout(
             async () => {
                 try {
-                    const response = await fetch(
-                        `/api/memos/${memoId}?userId=1`,
+                    const response = await apiFetch(
+                        `/api/memos/${memoId}`,
                         {
                             method: 'PATCH',
                             headers: {

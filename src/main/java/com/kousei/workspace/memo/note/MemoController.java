@@ -1,9 +1,12 @@
 package com.kousei.workspace.memo.note;
 
+import com.kousei.workspace.auth.JwtUserIdExtractor;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,13 +27,16 @@ import java.util.List;
 public class MemoController {
 
     private final MemoService memoService;
+    private final JwtUserIdExtractor jwtUserIdExtractor;
 
     @GetMapping
     public List<MemoResponse> getMemos(
-            @RequestParam
-            @Positive
-            Long userId
+            @AuthenticationPrincipal
+            Jwt jwt
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return memoService.getMemos(userId);
     }
 
@@ -41,10 +46,12 @@ public class MemoController {
             @Positive
             Long memoId,
 
-            @RequestParam
-            @Positive
-            Long userId
+            @AuthenticationPrincipal
+            Jwt jwt
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return memoService.getMemo(
                 userId,
                 memoId
@@ -54,14 +61,16 @@ public class MemoController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public MemoResponse createMemo(
-            @RequestParam
-            @Positive
-            Long userId,
+            @AuthenticationPrincipal
+            Jwt jwt,
 
             @Valid
             @RequestBody
             MemoCreateRequest request
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return memoService.createMemo(
                 userId,
                 request
@@ -74,14 +83,16 @@ public class MemoController {
             @Positive
             Long memoId,
 
-            @RequestParam
-            @Positive
-            Long userId,
+            @AuthenticationPrincipal
+            Jwt jwt,
 
             @Valid
             @RequestBody
             MemoUpdateRequest request
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         return memoService.updateMemo(
                 userId,
                 memoId,
@@ -96,10 +107,12 @@ public class MemoController {
             @Positive
             Long memoId,
 
-            @RequestParam
-            @Positive
-            Long userId
+            @AuthenticationPrincipal
+            Jwt jwt
     ) {
+        Long userId =
+                jwtUserIdExtractor.extract(jwt);
+
         memoService.deleteMemo(
                 userId,
                 memoId

@@ -702,7 +702,7 @@ function BoardMemoPage() {
                 isOpen={notePendingDelete !== null}
                 title="DELETE MEMO"
                 message={
-                `"${notePendingDelete?.title.trim() ||
+                `"${notePendingDelete?.title?.trim() ||
                 '제목 없음'}" ` +
                     '메모를 삭제할까요?'
                 }

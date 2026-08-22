@@ -225,7 +225,7 @@ function ListMemoPage() {
 
                         <input
                             className="memo-title-input"
-                            value={selectedNote.title}
+                            value={selectedNote.title ?? ''}
                             onChange={(event) =>
                                 updateSelectedNote('title', event.target.value)
                             }
@@ -234,7 +234,7 @@ function ListMemoPage() {
 
                         <textarea
                             className="memo-content-input"
-                            value={selectedNote.content}
+                            value={selectedNote.content ?? ''}
                             onChange={(event) =>
                                 updateSelectedNote('content', event.target.value)
                             }

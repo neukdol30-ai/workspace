@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kousei.workspace.user.WorkspaceUserMapper">
+
+    <resultMap
+            id="workspaceUserResultMap"
+            type="com.kousei.workspace.user.WorkspaceUser"
+    >
+        <id
+                column="USER_ID"
+                property="userId"
+        />
+
+        <result
+                column="EMAIL"
+                property="email"
+        />
+
+        <result
+                column="PASSWORD_HASH"
+                property="passwordHash"
+        />
+
+        <result
+                column="USER_NAME"
+                property="userName"
+        />
+
+        <result
+                column="CREATED_AT"
+                property="createdAt"
+        />
+    </resultMap>
+
+    <select
+            id="findByEmail"
+            resultMap="workspaceUserResultMap"
+    >
+        SELECT
+            USER_ID,
+            EMAIL,
+            PASSWORD_HASH,
+            USER_NAME,
+            CREATED_AT
+        FROM WORKSPACE_USER
+        WHERE EMAIL = #{email}
+    </select>
+
+</mapper>

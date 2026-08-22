@@ -12,3 +12,8 @@ mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
     map-underscore-to-camel-case: true
+
+workspace:
+  jwt:
+    secret: ${WORKSPACE_JWT_SECRET}
+    access-token-expiration-seconds: 3600

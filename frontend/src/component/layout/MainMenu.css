@@ -44,8 +44,8 @@
     font: inherit;
 }
 
-.main-menu-button:hover,
-.main-menu-button:focus-visible {
+.main-menu-button:not(.main-menu-button--disabled):hover,
+.main-menu-button:not(.main-menu-button--disabled):focus-visible {
     color: var(--surface);
     outline: 0;
     background: var(--ink);
@@ -67,9 +67,26 @@
     line-height: 1;
 }
 
+.main-menu-button-status {
+    margin-top: auto;
+    padding-bottom: 10px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    opacity: 0.65;
+}
+
 .main-menu-button-footer {
     min-height: 64px;
-    margin-top: auto;
+    margin-top: 0;
     border-top: 2px solid currentColor;
 }
 
+.main-menu-button--disabled {
+    opacity: 0.5;
+    cursor: grab;
+}
+
+.main-menu-viewport--dragging .main-menu-button--disabled {
+    cursor: grabbing;
+}

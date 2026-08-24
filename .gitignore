@@ -47,3 +47,5 @@ dist/
 
 ### OS ###
 .DS_Store
+
+/secrets/

@@ -1,0 +1,63 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:23
+    container_name: workspace-deploy-oracle
+    restart: unless-stopped
+
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      APP_USER: ${WORKSPACE_DB_USERNAME}
+      APP_USER_PASSWORD: ${WORKSPACE_DB_PASSWORD}
+
+    volumes:
+      - workspace-oracle-data:/opt/oracle/oradata
+
+    healthcheck:
+      test:
+        - CMD
+        - healthcheck.sh
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+    stop_grace_period: 60s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: workspace-api:local
+    container_name: workspace-deploy-api
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+    expose:
+      - "8080"
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    image: workspace-frontend:local
+    container_name: workspace-deploy-frontend
+    restart: unless-stopped
+
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:80"
+
+volumes:
+  workspace-oracle-data:
+    name: workspace-deploy-oracle-data

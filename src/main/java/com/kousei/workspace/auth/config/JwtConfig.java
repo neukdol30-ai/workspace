@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,6 +16,9 @@ import java.util.Base64;
 
 @Configuration
 public class JwtConfig {
+
+    private static final String ISSUER =
+            "workspace-api";
 
     @Bean
     public SecretKey jwtSecretKey(
@@ -44,9 +48,20 @@ public class JwtConfig {
     public JwtDecoder jwtDecoder(
             SecretKey jwtSecretKey
     ) {
-        return NimbusJwtDecoder
-                .withSecretKey(jwtSecretKey)
-                .macAlgorithm(MacAlgorithm.HS256)
-                .build();
+        NimbusJwtDecoder jwtDecoder =
+                NimbusJwtDecoder
+                        .withSecretKey(jwtSecretKey)
+                        .macAlgorithm(
+                                MacAlgorithm.HS256
+                        )
+                        .build();
+
+        jwtDecoder.setJwtValidator(
+                JwtValidators.createDefaultWithIssuer(
+                        ISSUER
+                )
+        );
+
+        return jwtDecoder;
     }
 }

@@ -2,14 +2,42 @@ import { useRef, useState} from "react";
 import './MainMenu.css'
 
 const menuItems = [
-    {id: 'memo', number: '01', title: 'MEMO'},
-    {id: 'dummy', number: '02', title: 'dummy'},
-    {id: 'dummy2', number: '03', title: 'dummy2'},
-    {id: 'dummy3', number: '04', title: 'dummy3'},
-    {id: 'dummy4', number: '05', title: 'dummy4'},
-    {id: 'dummy5', number: '06', title: 'dummy5'},
+    {
+        id: 'memo',
+        number: '01',
+        title: 'MEMO',
+        status: 'ACTIVE',
+        available: true,
+    },
+    {
+        id: 'calendar',
+        number: '02',
+        title: 'CALENDAR',
+        status: 'PLANNED',
+        available: false,
+    },
+    {
+        id: 'md-image',
+        number: '03',
+        title: 'MD IMAGE',
+        status: 'PLANNED',
+        available: false,
+    },
+    {
+        id: 'mail',
+        number: '04',
+        title: 'MAIL',
+        status: 'PLANNED',
+        available: false,
+    },
+    {
+        id: 'archive',
+        number: '05',
+        title: 'ARCHIVE',
+        status: 'PLANNED',
+        available: false,
+    },
 ]
-
 
 function MainMenu({ onSelectMenu }) {
     const [menuOffset, setMenuOffset] = useState(0)
@@ -118,14 +146,37 @@ function MainMenu({ onSelectMenu }) {
                     >
                         {menuItems.map((menu) => (
                             <button
-                                className="main-menu-button"
+                                className={`main-menu-button ${
+                                    menu.available
+                                        ? ''
+                                        : 'main-menu-button--disabled'
+                                }`}
                                 key={menu.id}
                                 type="button"
-                                data-menu-id={menu.id}
+                                data-menu-id={
+                                    menu.available
+                                        ? menu.id
+                                        : undefined
+                                }
+                                tabIndex={menu.available ? 0 : -1}
+                                aria-disabled={!menu.available}
                             >
-                                <span className="main-menu-button-number">{menu.number}</span>
-                                <span className="main-menu-button-title">{menu.title}</span>
-                                <span className="main-menu-button-footer" aria-hidden="true" />
+                                <span className="main-menu-button-number">
+                                    {menu.number}
+                                </span>
+
+                                <span className="main-menu-button-title">
+                                    {menu.title}
+                                </span>
+
+                                <span className="main-menu-button-status">
+                                    {menu.status}
+                                </span>
+
+                                <span
+                                    className="main-menu-button-footer"
+                                    aria-hidden="true"
+                                />
                             </button>
                         ))}
                     </div>

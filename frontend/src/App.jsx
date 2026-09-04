@@ -1,14 +1,5 @@
-import {
-    useEffect,
-    useState,
-} from 'react'
-import {
-    Navigate,
-    Route,
-    Routes,
-    useLocation,
-    useNavigate,
-} from 'react-router-dom'
+import {useEffect, useState,} from 'react'
+import {Navigate, Route, Routes, useLocation, useNavigate,} from 'react-router-dom'
 import TopBar from './component/layout/TopBar.jsx'
 import MemoProvider from './context/MemoProvider.jsx'
 import { hasAccessToken } from './api/authStorage.js'
@@ -18,28 +9,37 @@ import MemoLayout from './pages/memo/MemoLayout.jsx'
 import ListMemoPage from './pages/memo/ListMemoPage.jsx'
 import BoardMemoPage from './pages/memo/BoardMemoPage.jsx'
 import { logout } from './api/authApi.js'
+import useDevAutoLogin from "./hooks/useDevAutoLogin.js";
 
 function App() {
+
     const navigate = useNavigate()
+
     const location = useLocation()
 
+    // 로그인 여부
     const [isAuthenticated, setIsAuthenticated] =
         useState(() => hasAccessToken())
 
+    const isAuthInitializing =
+        useDevAutoLogin(setIsAuthenticated)
+
+    //사이드메뉴 고정 확인
     const [isMenuPinned, setIsMenuPinned] =
         useState(true)
-
+    //사이드 메뉴 열림 확인
     const [isSideMenuOpen, setIsSideMenuOpen] =
         useState(true)
-
+    //메모 페이지의 경우 열림 확인
     const [memoSideMenuMode, setMemoSideMenuMode] =
         useState('local')
 
+    // 인증 실패 이밴트 감시
     useEffect(() => {
-        function handleUnauthorized() {
-            setIsAuthenticated(false)
 
-            navigate('/login', {
+        function handleUnauthorized() {
+            setIsAuthenticated(false) //로그인 해제
+            navigate('/login', { //로그인으로 이동
                 replace: true,
             })
         }
@@ -57,6 +57,7 @@ function App() {
         }
     }, [navigate])
 
+    //로그인 성공 처리
     function handleLoginSuccess() {
         setIsAuthenticated(true)
     }
@@ -70,6 +71,10 @@ function App() {
         })
     }
 
+    if (isAuthInitializing){
+        return null
+    }
+
     if (!isAuthenticated) {
         return (
             <Routes>
@@ -77,9 +82,7 @@ function App() {
                     path="/login"
                     element={
                         <LoginPage
-                            onLoginSuccess={
-                                handleLoginSuccess
-                            }
+                            onLoginSuccess={ handleLoginSuccess }
                         />
                     }
                 />

@@ -1,33 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { initialFolders } from '../pages/memo/memoData.js'
+import { createFolderRequest, deleteFolderRequest, fetchFolders } from "../api/memo/folderApi.js";
+import { createMemoRequest, deleteMemoRequest, fetchMemos } from "../api/memo/memoApi.js";
+import { createBoardEdgeRequest,
+         deleteBoardEdgeRequest,
+         fetchBoardEdges,
+         fetchBoardNodes,
+         saveBoardNodeRequest } from "../api/memo/boardApi.js";
+import { createMissingBoardNodes } from "../utils/memoBoardNodes.js";
 import MemoContext from "./MemoContext.js"
-import apiFetch from '../api/apiFetch.js'
-
-
-async function saveBoardNodeRequest(node) {
-    const response = await apiFetch(
-        `/api/board/nodes/${node.memoId}`,
-        {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                x: node.x,
-                y: node.y,
-                stackOrder: node.stackOrder,
-            }),
-        },
-    )
-
-    if (!response.ok) {
-        throw new Error(
-            `보드 노드 저장 실패: ${response.status}`,
-        )
-    }
-
-    return response.json()
-}
+import useMemoAutoSave from "../hooks/useMemoAutoSave.js";
 
 function MemoProvider({ children }) {
     const [folders, setFolders] = useState(initialFolders)
@@ -35,18 +17,10 @@ function MemoProvider({ children }) {
     useEffect(() => {
         async function loadFolders() {
             try {
-                const response = await apiFetch(
-                    '/api/folders',
-                )
 
-                if (!response.ok) {
-                    throw new Error(
-                        `폴더 조회 실패: ${response.status}`,
-                    )
-                }
 
                 const databaseFolders =
-                    await response.json()
+                    await fetchFolders()
 
                 setFolders([
                     {
@@ -66,7 +40,8 @@ function MemoProvider({ children }) {
 
     const [notes, setNotes] = useState([])
 
-    const memoSaveTimersRef = useRef(new Map())
+    const { clearMemoSaveTimer, scheduleMemoSave } =
+    useMemoAutoSave(setNotes)
 
     const [selectedFolderId, setSelectedFolderId] =
     useState('all')
@@ -102,26 +77,9 @@ function MemoProvider({ children }) {
             return
         }
 
-        const response = await apiFetch(
-            '/api/folders',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: trimmedName,
-                }),
-            },
-        )
 
-        if (!response.ok) {
-            throw new Error(
-                `폴더 생성 실패: ${response.status}`,
-            )
-        }
 
-        const createdFolder = await response.json()
+        const createdFolder = await createFolderRequest(trimmedName)
 
         setFolders((currentFolders) => [
             ...currentFolders,
@@ -136,76 +94,18 @@ function MemoProvider({ children }) {
         async function loadMemoWorkspace() {
             try {
                 const [
-                    memosResponse,
-                    nodesResponse,
-                ] = await Promise.all([
-                    apiFetch('/api/memos'),
-                    apiFetch('/api/board/nodes'),
-                ])
-
-                if (!memosResponse.ok) {
-                    throw new Error(
-                        `메모 조회 실패: ${memosResponse.status}`,
-                    )
-                }
-
-                if (!nodesResponse.ok) {
-                    throw new Error(
-                        `보드 노드 조회 실패: ${nodesResponse.status}`,
-                    )
-                }
-
-                const [
                     databaseMemos,
                     databaseNodes,
                 ] = await Promise.all([
-                    memosResponse.json(),
-                    nodesResponse.json(),
+                    fetchMemos(),
+                    fetchBoardNodes(),
                 ])
 
-                const storedMemoIds = new Set(
-                    databaseNodes.map(
-                        (node) => node.memoId,
-                    ),
-                )
-
-                const highestStackOrder =
-                    databaseNodes.reduce(
-                        (highest, node) =>
-                            Math.max(
-                                highest,
-                                node.stackOrder ?? 0,
-                            ),
-                        0,
+                const missingNodes =
+                    createMissingBoardNodes(
+                        databaseMemos,
+                        databaseNodes,
                     )
-
-                const missingNodes = databaseMemos
-                    .filter(
-                        (memo) =>
-                            !storedMemoIds.has(memo.id),
-                    )
-                    .map((memo, index) => {
-                        const placementIndex =
-                            databaseNodes.length + index
-
-                        return {
-                            memoId: memo.id,
-                            x:
-                                80 +
-                                (placementIndex % 4) *
-                                260,
-                            y:
-                                80 +
-                                Math.floor(
-                                    placementIndex / 4,
-                                ) *
-                                200,
-                            stackOrder:
-                                highestStackOrder +
-                                index +
-                                1,
-                        }
-                    })
 
                 setNotes(databaseMemos)
 
@@ -258,33 +158,10 @@ function MemoProvider({ children }) {
     }, [])
 
     useEffect(() => {
-        const memoSaveTimers =
-            memoSaveTimersRef.current
-
-        return () => {
-            memoSaveTimers.forEach(
-                (timerId) => clearTimeout(timerId),
-            )
-
-            memoSaveTimers.clear()
-        }
-    }, [])
-
-    useEffect(() => {
         async function loadBoardEdges() {
             try {
-                const response = await apiFetch(
-                    '/api/board/edges',
-                )
-
-                if (!response.ok) {
-                    throw new Error(
-                        `연결선 조회 실패: ${response.status}`,
-                    )
-                }
-
                 const databaseEdges =
-                    await response.json()
+                    await fetchBoardEdges()
 
                 setBoardEdges(databaseEdges)
             } catch (error) {
@@ -298,18 +175,6 @@ function MemoProvider({ children }) {
 
         loadBoardEdges()
     }, [])
-
-    function clearMemoSaveTimer(memoId) {
-        const timerId =
-            memoSaveTimersRef.current.get(memoId)
-
-        if (timerId === undefined) {
-            return
-        }
-
-        clearTimeout(timerId)
-        memoSaveTimersRef.current.delete(memoId)
-    }
 
     async function saveBoardNode(node) {
         try {
@@ -361,34 +226,7 @@ function MemoProvider({ children }) {
         }
 
         try {
-            const response = await apiFetch(
-                '/api/board/edges',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        folderId: edge.folderId,
-                        sourceMemoId:
-                        edge.sourceMemoId,
-                        targetMemoId:
-                        edge.targetMemoId,
-                        edgeType:
-                            edge.edgeType ??
-                            'RELATED',
-                    }),
-                },
-            )
-
-            if (!response.ok) {
-                throw new Error(
-                    `연결선 생성 실패: ${response.status}`,
-                )
-            }
-
-            const savedEdge =
-                await response.json()
+            const savedEdge = await createBoardEdgeRequest(edge)
 
             setBoardEdges((currentEdges) => {
                 const edgeExists =
@@ -422,18 +260,7 @@ function MemoProvider({ children }) {
 
     async function deleteBoardEdge(edgeId) {
         try {
-            const response = await apiFetch(
-                `/api/board/edges/${edgeId}`,
-                {
-                    method: 'DELETE',
-                },
-            )
-
-            if (!response.ok) {
-                throw new Error(
-                    `연결선 삭제 실패: ${response.status}`,
-                )
-            }
+            await deleteBoardEdgeRequest(edgeId)
 
             setBoardEdges((currentEdges) =>
                 currentEdges.filter(
@@ -476,28 +303,13 @@ function MemoProvider({ children }) {
         }
 
         try {
-            const response = await apiFetch(
-                '/api/memos',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        folderId: targetFolder.id,
-                        title: '새 메모',
-                        content: '',
-                    }),
-                },
-            )
 
-            if (!response.ok) {
-                throw new Error(
-                    `메모 생성 실패: ${response.status}`,
-                )
-            }
-
-            const createdNote = await response.json()
+            const createdNote =
+                await createMemoRequest({
+                    folderId: targetFolder.id,
+                    title: '새 메모',
+                    content: '',
+                })
 
             setNotes((currentNotes) => [
                 createdNote,
@@ -581,22 +393,11 @@ function MemoProvider({ children }) {
                 .map((note) => note.id),
         )
 
+        await deleteFolderRequest(folderId)
+
         deletedNoteIds.forEach(
             (memoId) => clearMemoSaveTimer(memoId),
         )
-
-        const response = await apiFetch(
-            `/api/folders/${folderId}`,
-            {
-                method: 'DELETE',
-            },
-        )
-
-        if (!response.ok) {
-            throw new Error(
-                `폴더 삭제 실패: ${response.status}`,
-            )
-        }
 
         const remainingNotes = notes.filter(
             (note) => note.folderId !== folderId,
@@ -634,18 +435,7 @@ function MemoProvider({ children }) {
         clearMemoSaveTimer(noteId)
 
         try {
-            const response = await apiFetch(
-                `/api/memos/${noteId}`,
-                {
-                    method: 'DELETE',
-                },
-            )
-
-            if (!response.ok) {
-                throw new Error(
-                    `메모 삭제 실패: ${response.status}`,
-                )
-            }
+            await deleteMemoRequest(noteId)
         } catch (error) {
             console.error(error)
             window.alert('메모 삭제에 실패했습니다.')
@@ -729,80 +519,7 @@ function MemoProvider({ children }) {
                     : note,
             ),
         )
-
-        const previousTimerId =
-            memoSaveTimersRef.current.get(memoId)
-
-        if (previousTimerId) {
-            clearTimeout(previousTimerId)
-        }
-
-        const timerId = setTimeout(
-            async () => {
-                try {
-                    const response = await apiFetch(
-                        `/api/memos/${memoId}`,
-                        {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type':
-                                    'application/json',
-                            },
-                            body: JSON.stringify({
-                                title: nextNote.title,
-                                content: nextNote.content,
-                            }),
-                        },
-                    )
-
-                    if (!response.ok) {
-                        throw new Error(
-                            `메모 수정 실패: ${response.status}`,
-                        )
-                    }
-
-                    const savedNote =
-                        await response.json()
-
-                    setNotes((currentNotes) =>
-                        currentNotes.map((note) => {
-                            if (note.id !== memoId) {
-                                return note
-                            }
-
-                            const hasNewerInput =
-                                note.title !== nextNote.title ||
-                                note.content !== nextNote.content
-
-                            return hasNewerInput
-                                ? note
-                                : savedNote
-                        }),
-                    )
-                } catch (error) {
-                    console.error(error)
-                    window.alert(
-                        '메모 자동 저장에 실패했습니다.',
-                    )
-                } finally {
-                    if (
-                        memoSaveTimersRef.current.get(
-                            memoId,
-                        ) === timerId
-                    ) {
-                        memoSaveTimersRef.current.delete(
-                            memoId,
-                        )
-                    }
-                }
-            },
-            600,
-        )
-
-        memoSaveTimersRef.current.set(
-            memoId,
-            timerId,
-        )
+        scheduleMemoSave(nextNote)
     }
 
     const value = {

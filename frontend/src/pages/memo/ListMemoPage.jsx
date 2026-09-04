@@ -1,9 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState, } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { MdDeleteOutline } from 'react-icons/md'
 import ConfirmDialog from '../../component/common/ConfirmDialog.jsx'
 import formatMemoUpdatedAt from '../../utils/formatMemoUpdatedAt.js'
 import './ListMemoPage.css'
+
+function shouldShowMemoEndMark(textarea) {
+    const hasVerticalScroll =
+        textarea.scrollHeight >
+        textarea.clientHeight + 1
+
+    const isAtScrollEnd =
+        textarea.scrollHeight -
+        textarea.scrollTop -
+        textarea.clientHeight <= 2
+
+    return (
+        !hasVerticalScroll ||
+        isAtScrollEnd
+    )
+}
 
 function ListMemoPage() {
 
@@ -12,6 +28,11 @@ function ListMemoPage() {
 
     const [folderPendingDelete, setFolderPendingDelete] =
         useState(null)
+
+    const memoContentRef = useRef(null)
+
+    const [ showMemoEndMark, setShowMemoEndMark,] =
+        useState(true)
 
     const {
         folders,
@@ -29,6 +50,24 @@ function ListMemoPage() {
         hideFolderList,
     } = useOutletContext()
 
+    useEffect(() => {
+        const textarea = memoContentRef.current
+
+        if (!textarea) {
+            return
+        }
+
+        const frameId = requestAnimationFrame(() => {
+            setShowMemoEndMark(
+                shouldShowMemoEndMark(textarea),
+            )
+        })
+
+        return () => {
+            cancelAnimationFrame(frameId)
+        }
+    }, [selectedNoteId])
+
     const visibleNotes=
         selectedFolderId === 'all'
             ? notes
@@ -43,6 +82,19 @@ function ListMemoPage() {
         selectedFolder !== null &&
         !selectedFolder.isVirtual &&
         !selectedFolder.system
+
+    function handleMemoContentChange(event) {
+        const textarea = event.currentTarget
+
+        updateSelectedNote(
+            'content',
+            textarea.value,
+        )
+
+        setShowMemoEndMark(
+            shouldShowMemoEndMark(textarea),
+        )
+    }
 
     function handleDeleteSelectedNote() {
         if (!selectedNote) {
@@ -233,13 +285,25 @@ function ListMemoPage() {
                         />
 
                         <textarea
+                            ref={memoContentRef}
                             className="memo-content-input"
                             value={selectedNote.content ?? ''}
-                            onChange={(event) =>
-                                updateSelectedNote('content', event.target.value)
-                            }
+                            onChange={handleMemoContentChange}
+                            onScroll={(event) => {
+                                setShowMemoEndMark(
+                                    shouldShowMemoEndMark(
+                                        event.currentTarget,
+                                    ),
+                                )
+                            }}
                             placeholder="메모를 입력하세요."
                         />
+                        {showMemoEndMark && (
+                            <div
+                                className="memo-end-mark"
+                                aria-hidden="true"
+                            />
+                        )}
                     </>
                 ) : (
                     <div className="memo-empty-editor">

@@ -33,14 +33,30 @@
 
 .memo-folder-list,
 .memo-note-list {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
-    scrollbar-width: none;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
 }
 
 .memo-folder-list::-webkit-scrollbar,
 .memo-note-list::-webkit-scrollbar,
 .memo-content-input::-webkit-scrollbar {
-    display: none;
+    width: 6px;
+}
+
+.memo-folder-list::-webkit-scrollbar-thumb,
+.memo-note-list::-webkit-scrollbar-thumb,
+.memo-content-input::-webkit-scrollbar-thumb {
+    background: var(--line);
+}
+
+.memo-folder-list::-webkit-scrollbar-track,
+.memo-note-list::-webkit-scrollbar-track,
+.memo-content-input::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .memo-folder-item,
@@ -150,6 +166,7 @@
 }
 
 .memo-editor {
+    position: relative;
     display: flex;
     flex-direction: column;
     background: var(--surface);
@@ -185,9 +202,18 @@
     min-height: 0;
     resize: none;
     overflow-y: auto;
-    padding: 20px 22px;
+    padding: 20px 22px 42px;
     line-height: 1.7;
-    scrollbar-width: none;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+
+    background-color:
+    color-mix(
+    in srgb,
+    var(--surface) 88%,
+    white
+    );
 }
 
 .memo-empty-editor {
@@ -196,6 +222,18 @@
     place-items: center;
     font-size: 0.75rem;
     opacity: 0.6;
+}
+
+.memo-end-mark {
+    position: absolute;
+    left: 50%;
+    bottom: 14px;
+    width: 48px;
+    height: 1px;
+    background: var(--line);
+    opacity: 0.35;
+    pointer-events: none;
+    transform: translateX(-50%);
 }
 
 .memo-layout--folders-hidden {
